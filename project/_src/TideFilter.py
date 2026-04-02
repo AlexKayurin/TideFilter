@@ -235,6 +235,8 @@ def main():
         icon = QtGui.QIcon(iconfile)
         mc.setWindowIcon(icon)
 
+    mc.setWindowTitle(f'Tide Filter - akayurin@gmail com \u00A9 2026')
+
     mc.show()
 
     sys.exit(app.exec())
