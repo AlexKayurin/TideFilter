@@ -1,0 +1,12 @@
+{
+"EXTENSION": ".txt",
+"FIELDFORMAT": [
+"Date",
+"Time",
+"Tide"
+],
+"DATETIMEFORMAT": [
+"%d/%m/%Y",
+"%H:%M:%S"
+]
+}
