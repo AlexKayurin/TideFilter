@@ -43,7 +43,8 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         try:
             # save cfg file in ..\_internal\cfg.json
             CFG = {
-                'EXTENSION' : EXTENSION,
+                'LASTFOLDER' : LASTFOLDER,
+                'LINESTOSKIP' : LINESTOSKIP,
                 'FIELDFORMAT' : FIELDFORMAT,
                 'DATETIMEFORMAT' : DATETIMEFORMAT,
             }
@@ -71,17 +72,21 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
 
     def selectfile(self):
-        fName, _ = QFileDialog.getOpenFileName(self, 'Export filtered tide', '*',
-                                               'All Files (*.*)', options=OPTIONS)
+        fName, _ = QFileDialog.getOpenFileName(self, 'Load tide file', f'{LASTFOLDER}',
+                                               'ASCII tide files (*.*)', options=OPTIONS)
         if fName:
             self.loadtide(fName)
 
 
     def loadtide(self, fName):
+        global LASTFOLDER
+
         if fName:
+            LASTFOLDER = os.path.dirname(fName)
+
             try:
-                self.tide = pd.read_csv(fName, sep=r';|\s|\t|,', skip_blank_lines=True, header=None,
-                                        names=FIELDFORMAT,
+                self.tide = pd.read_csv(fName, sep=r';|\s|\t|,', skiprows=[x for x in range(int(LINESTOSKIP))],
+                                        skip_blank_lines=True, header=None, names=FIELDFORMAT,
                                         dtype='object', engine='python')
 
                 #  add concatenated 'DateTime' col
@@ -100,6 +105,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
                 self.plotlegend = self.tideplot.addLegend()
                 self.downsample()
+
             except:
                 messagepop('Check file (header, format, etc.)')
 
@@ -172,7 +178,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
 
     def export(self):
-        fName, _ = QFileDialog.getSaveFileName(self, 'Export filtered tide', '*',
+        fName, _ = QFileDialog.getSaveFileName(self, 'Export filtered tide', f'{LASTFOLDER}',
                                                'csv file (*.csv);;All Files (*.*)', options=OPTIONS)
         if fName:
             self.tidesub.to_csv(fName, columns=['DateTime','Filtered'], index=False, header=False)
@@ -197,7 +203,8 @@ def main():
     global configfold
     global configfile
     global iconfile
-    global EXTENSION
+    global LASTFOLDER
+    global LINESTOSKIP
     global FIELDFORMAT
     global DATETIMEFORMAT
 
@@ -212,14 +219,14 @@ def main():
     try:
         with open(configfile) as cfgfile:
             cfg = json.load(cfgfile)
-        EXTENSION = cfg['EXTENSION']
+        LASTFOLDER = cfg['LASTFOLDER']
+        LINESTOSKIP = cfg['LINESTOSKIP']
         FIELDFORMAT = cfg['FIELDFORMAT']
         DATETIMEFORMAT = cfg['DATETIMEFORMAT']
-        print(EXTENSION)
-        print(FIELDFORMAT)
-        print(DATETIMEFORMAT)
+
     except:
-        EXTENSION = '.txt'
+        LASTFOLDER = parentfold
+        LINESTOSKIP = 0
         FIELDFORMAT = ['Date', 'Time', 'Tide']
         DATETIMEFORMAT = ['%d/%m/%Y', '%H:%M:%S']
 

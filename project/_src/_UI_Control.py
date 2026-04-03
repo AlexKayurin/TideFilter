@@ -34,17 +34,17 @@ class Ui_MainWindow(object):
         self.actionExport.setObjectName(u"actionExport")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.verticalLayout_2 = QVBoxLayout(self.centralwidget)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.verticalLayout_3 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.tideplot = PlotWidget(self.centralwidget)
         self.tideplot.setObjectName(u"tideplot")
 
-        self.horizontalLayout_2.addWidget(self.tideplot)
+        self.horizontalLayout_3.addWidget(self.tideplot)
 
-        self.verticalLayout = QVBoxLayout()
-        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
         self.l3 = QLabel(self.centralwidget)
@@ -65,7 +65,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_9.addWidget(self.sp_subsample)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_9)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_9)
 
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
@@ -84,7 +84,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.addWidget(self.le_sg_win)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_6)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_6)
 
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
@@ -103,7 +103,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7.addWidget(self.le_sg_ord)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_7)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_7)
 
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
@@ -122,8 +122,16 @@ class Ui_MainWindow(object):
         self.horizontalLayout_8.addWidget(self.le_ma_win)
 
 
-        self.verticalLayout.addLayout(self.horizontalLayout_8)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_8)
 
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalSpacer_2 = QSpacerItem(0, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_2)
+
+        self.verticalLayout = QVBoxLayout()
+        self.verticalLayout.setObjectName(u"verticalLayout")
         self.b_run = QPushButton(self.centralwidget)
         self.b_run.setObjectName(u"b_run")
         self.b_run.setMinimumSize(QSize(100, 50))
@@ -138,15 +146,25 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addWidget(self.b_export)
 
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.verticalLayout.addItem(self.verticalSpacer)
-
 
         self.horizontalLayout_2.addLayout(self.verticalLayout)
 
+        self.horizontalSpacer_3 = QSpacerItem(0, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_2.addItem(self.horizontalSpacer_3)
+
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer)
+
+
+        self.horizontalLayout_3.addLayout(self.verticalLayout_2)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_3)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -185,7 +203,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
 
-        self.verticalLayout_2.addLayout(self.horizontalLayout)
+        self.verticalLayout_3.addLayout(self.horizontalLayout)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
