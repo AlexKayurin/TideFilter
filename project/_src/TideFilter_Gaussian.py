@@ -2,20 +2,19 @@ import os
 import sys
 import json
 from datetime import datetime
-from scipy.signal import savgol_filter
-import numpy as np
+from scipy.ndimage import gaussian_filter1d
 import pandas as pd
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 import pyqtgraph as pg
-import _UI_Control
+import _UI_Control_GAUSS
 
 
 OPTIONS = QFileDialog.Options()
 
 
-class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -24,9 +23,8 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         self.vb_tideplot = self.tideplot.plotItem.vb  # for correct mouse tracking
 
         # set form
-        self.le_sg_win.setValidator(QIntValidator())
-        self.le_sg_ord.setValidator(QIntValidator())
-        self.le_ma_win.setValidator(QIntValidator())
+        self.le_gauss_sigma.setValidator(QIntValidator())
+
         # set signals
         self.tideplot.scene().sigMouseMoved.connect(self.mouse_moved)
         self.b_run.clicked.connect(self.runfilters)
@@ -121,8 +119,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         try:
             self.plotlegend.removeItem(self.tidecurve)
             self.plotlegend.removeItem(self.tidecurvesub)
-            self.plotlegend.removeItem(self.sgf)
-            self.plotlegend.removeItem(self.sga)
+            self.plotlegend.removeItem(self.g1d)
         except:
             pass
 
@@ -130,9 +127,9 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
         parent_box = pg.PlotDataItem()
         self.tidecurve = pg.PlotDataItem(x=self.tide['Timestamp'], y=self.tide['Tide'],
-                                         pen=pg.mkPen((204, 0, 204, 255), width=0.5))
+                                         pen=pg.mkPen((255, 128, 0, 255), width=1))
         self.tidecurvesub = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.tidesub['Tide'],
-                                            pen=pg.mkPen((255, 128, 0, 255), width=0.5))
+                                            pen=pg.mkPen((204, 0, 204, 255), width=0.5))
 
         self.tidecurve.setParentItem(parent_box)
         self.tidecurvesub.setParentItem(parent_box)
@@ -146,34 +143,26 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
 
     def runfilters(self):
+        # Gaussian 1D filter-------------------------------------------------------------------------------------------
+        gauss_sigma = int(self.le_gauss_sigma.text())
+        self.gaussfiltered = gaussian_filter1d(self.tidesub['Tide'], gauss_sigma)
+        # Gaussian 1D filter-------------------------------------------------------------------------------------------
+
+        self.tidesub['Filtered'] = self.gaussfiltered
+
+        #  plot
         self.plotraw()
-
-        mawin = int(self.le_ma_win.text())
-
-        # sav_gol filter & moving average convolution------------------------------------------------------------------
-        self.sgfiltered = savgol_filter(self.tidesub['Tide'], int(self.le_sg_win.text()),
-                                        int(self.le_sg_ord.text()), mode='nearest')
-        self.sgaveraged = np.convolve(self.sgfiltered, np.ones(mawin),
-                                      'same') / mawin
-        self.sgaveraged[:mawin] = self.sgfiltered[:mawin]
-        self.sgaveraged[-mawin:] = self.sgfiltered[-mawin:]
-
-        self.tidesub['Filtered'] = self.sgaveraged
-
         parent_box = pg.PlotDataItem()
-        self.sgf = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.sgfiltered,
-                                         pen=pg.mkPen((0, 204, 204, 255), width=1))
-        self.sga = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.sgaveraged,
-                                         pen=pg.mkPen((255, 204, 204, 255), width=4))
-        # sav_gol filter & moving average convolution------------------------------------------------------------------
 
-        self.sgf.setParentItem(parent_box)
-        self.sga.setParentItem(parent_box)
+        self.g1d = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.gaussfiltered,
+                                         pen=pg.mkPen((0, 255, 0, 255), width=4))
 
+        self.g1d.setParentItem(parent_box)
         self.tideplot.addItem(parent_box)
 
-        self.plotlegend.addItem(self.sgf, 'SG Filtered')
-        self.plotlegend.addItem(self.sga, 'SG Averaged')
+        # legend
+        self.plotlegend.addItem(self.g1d, 'Gauss Filtered')
+
 
 
     def export(self):

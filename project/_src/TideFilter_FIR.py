@@ -2,20 +2,20 @@ import os
 import sys
 import json
 from datetime import datetime
-from scipy.signal import savgol_filter
+from scipy.signal import savgol_filter, kaiserord, lfilter, firwin
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtGui
-from PySide6.QtGui import QIntValidator
+from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 import pyqtgraph as pg
-import _UI_Control
+import _UI_Control_FIR
 
 
 OPTIONS = QFileDialog.Options()
 
 
-class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, _UI_Control_FIR.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -24,9 +24,15 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         self.vb_tideplot = self.tideplot.plotItem.vb  # for correct mouse tracking
 
         # set form
+        self.le_fir_samplerate.setValidator(QIntValidator())
+        self.le_fir_nyqrate.setValidator(QDoubleValidator())
+        self.le_fir_width.setValidator(QDoubleValidator())
+        self.le_fir_ripple.setValidator(QDoubleValidator())
+        self.le_fir_cutoff.setValidator(QDoubleValidator())
         self.le_sg_win.setValidator(QIntValidator())
         self.le_sg_ord.setValidator(QIntValidator())
         self.le_ma_win.setValidator(QIntValidator())
+
         # set signals
         self.tideplot.scene().sigMouseMoved.connect(self.mouse_moved)
         self.b_run.clicked.connect(self.runfilters)
@@ -121,6 +127,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         try:
             self.plotlegend.removeItem(self.tidecurve)
             self.plotlegend.removeItem(self.tidecurvesub)
+            self.plotlegend.removeItem(self.fir)
             self.plotlegend.removeItem(self.sgf)
             self.plotlegend.removeItem(self.sga)
         except:
@@ -146,32 +153,55 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
 
     def runfilters(self):
-        self.plotraw()
+        # FIR filter---------------------------------------------------------------------------------------------------
+        sample_rate = int(self.le_fir_samplerate.text())
+        nyq_rate = sample_rate / float(self.le_fir_nyqrate.text())
+        width = float(self.le_fir_width.text()) / nyq_rate
+        ripple_db = float(self.le_fir_ripple.text())
+        cutoff_hz = float(self.le_fir_cutoff.text())
 
-        mawin = int(self.le_ma_win.text())
+        N, beta = kaiserord(ripple_db, width)
+        taps = firwin(N, cutoff_hz / nyq_rate, window=('kaiser', beta))
+
+        # The phase delay of the filtered signal.
+        delay = 0.5 * (N - 1)
+
+        # Use lfilter to filter x with the FIR filter.
+        self.firfiltered = lfilter(taps, 1.0, self.tidesub['Tide'])
+        # FIR filter---------------------------------------------------------------------------------------------------
 
         # sav_gol filter & moving average convolution------------------------------------------------------------------
-        self.sgfiltered = savgol_filter(self.tidesub['Tide'], int(self.le_sg_win.text()),
-                                        int(self.le_sg_ord.text()), mode='nearest')
-        self.sgaveraged = np.convolve(self.sgfiltered, np.ones(mawin),
-                                      'same') / mawin
+        sg_win = int(self.le_sg_win.text())
+        sg_ord = int(self.le_sg_ord.text())
+        mawin = int(self.le_ma_win.text())
+
+        self.sgfiltered = savgol_filter(self.tidesub['Tide'], sg_win, sg_ord, mode='nearest')
+        self.sgaveraged = np.convolve(self.sgfiltered, np.ones(mawin), 'same') / mawin
+        # start/end filter window = from raw tide
         self.sgaveraged[:mawin] = self.sgfiltered[:mawin]
         self.sgaveraged[-mawin:] = self.sgfiltered[-mawin:]
 
         self.tidesub['Filtered'] = self.sgaveraged
+        # sav_gol filter & moving average convolution------------------------------------------------------------------
 
+        #  plot
+        self.plotraw()
         parent_box = pg.PlotDataItem()
+
+        self.fir = pg.PlotDataItem(x=self.tidesub['Timestamp'] - self.downrate * delay, y=self.firfiltered,
+                                         pen=pg.mkPen((0, 255, 0, 255), width=4))
         self.sgf = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.sgfiltered,
                                          pen=pg.mkPen((0, 204, 204, 255), width=1))
         self.sga = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.sgaveraged,
                                          pen=pg.mkPen((255, 204, 204, 255), width=4))
-        # sav_gol filter & moving average convolution------------------------------------------------------------------
 
+        self.fir.setParentItem(parent_box)
         self.sgf.setParentItem(parent_box)
         self.sga.setParentItem(parent_box)
-
         self.tideplot.addItem(parent_box)
 
+        # legend
+        self.plotlegend.addItem(self.fir, 'FIR Filtered')
         self.plotlegend.addItem(self.sgf, 'SG Filtered')
         self.plotlegend.addItem(self.sga, 'SG Averaged')
 
