@@ -3,10 +3,12 @@ import sys
 import json
 from datetime import datetime
 from scipy.ndimage import gaussian_filter1d
+import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QFileDialog, QMessageBox
+from PySide6.QtCore import Qt
 import pyqtgraph as pg
 import _UI_Control_GAUSS
 
@@ -24,9 +26,12 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
 
         # set form
         self.le_gauss_sigma.setValidator(QIntValidator())
+        self.l_text.setText('')
+        self.l_filename.setText('')
 
         # set signals
         self.tideplot.scene().sigMouseMoved.connect(self.mouse_moved)
+        self.b_reject.clicked.connect(self.reject)
         self.b_run.clicked.connect(self.runfilters)
         self.b_export.clicked.connect(self.export)
         self.sp_subsample.valueChanged.connect(self.downsample)
@@ -35,6 +40,9 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         # set graph axis
         self.h_axis = pg.DateAxisItem(orientation='bottom')
         self.tideplot.setAxisItems({'bottom': self.h_axis})
+
+        # variables
+        self.rejectflag = False
 
 
     def closeEvent(self, e):
@@ -54,9 +62,20 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
 
 
     def mouse_moved(self, e):
-        cursor = self.vb_tideplot.mapSceneToView(e)
-        self.ltime.setText(f'{datetime.fromtimestamp(int(cursor.x()))}')
-        self.ltide.setText(f'{round(cursor.y(), 2)}')
+        self.cursor = self.vb_tideplot.mapSceneToView(e)
+        self.ltime.setText(f'{datetime.fromtimestamp(int(self.cursor.x()))}')
+        self.ltide.setText(f'{round(self.cursor.y(), 2)}')
+
+
+    def keyPressEvent(self, e):
+        if self.rejectflag:
+            if e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
+                # delete from DF where: left ROI limit < 'Timestamp' < right ROI limit
+                condition = ((self.tide['Timestamp'] > self.roi.pos()[0]) &
+                             (self.tide['Timestamp'] < (self.roi.pos()[0] + self.roi.size()[0])))
+                self.tide = self.tide[~condition]
+
+                self.downsample()
 
 
     def dragEnterEvent(self, e):
@@ -81,6 +100,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         if fName:
             LASTFOLDER = os.path.dirname(fName)
 
+            self.l_filename.setText(os.path.basename(fName))
             try:
                 self.tide = pd.read_csv(fName, sep=r';|\s|\t|,', skiprows=[x for x in range(int(LINESTOSKIP))],
                                         skip_blank_lines=True, header=None, names=FIELDFORMAT,
@@ -141,6 +161,35 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         self.plotlegend.addItem(self.tidecurve, 'Raw')
         self.plotlegend.addItem(self.tidecurvesub, 'Raw Subsampled')
 
+        self.plotroi()
+
+
+    def reject(self):
+        self.rejectflag = True if not self.rejectflag else False
+
+        if self.rejectflag:
+            self.b_reject.setChecked(True)
+            self.b_reject.setStyleSheet("background-color: cyan")
+            self.l_text.setText('Press ENTER to reject')
+            self.plotroi()
+        else:
+            self.b_reject.setChecked(False)
+            self.b_reject.setStyleSheet("background-color: none")
+            self.l_text.setText('')
+            try:
+                self.tideplot.removeItem(self.roi)
+            except:
+                pass
+
+
+    def plotroi(self):
+        if self.rejectflag:
+            aspect = self.vb_tideplot.getAspectRatio()
+            span = (np.max(self.tideplot.viewRange()[1]) - np.min(self.tideplot.viewRange()[1])) / 10
+            self.roi = pg.RectROI([self.tide.loc[:, 'Timestamp'].mean(), self.tide.loc[:, 'Tide'].mean()],
+                                  [span / aspect, span], pen='r')
+            self.tideplot.addItem(self.roi)
+
 
     def runfilters(self):
         # Gaussian 1D filter-------------------------------------------------------------------------------------------
@@ -151,6 +200,8 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         self.tidesub['Filtered'] = self.gaussfiltered
 
         #  plot
+        self.rejectflag = True
+        self.reject()
         self.plotraw()
         parent_box = pg.PlotDataItem()
 
@@ -162,7 +213,6 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
 
         # legend
         self.plotlegend.addItem(self.g1d, 'Gauss Filtered')
-
 
 
     def export(self):

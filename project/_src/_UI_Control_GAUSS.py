@@ -94,6 +94,15 @@ class Ui_MainWindow(object):
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.b_reject = QPushButton(self.centralwidget)
+        self.b_reject.setObjectName(u"b_reject")
+        self.b_reject.setMinimumSize(QSize(100, 50))
+        self.b_reject.setMaximumSize(QSize(100, 50))
+        self.b_reject.setCheckable(True)
+        self.b_reject.setChecked(False)
+
+        self.verticalLayout.addWidget(self.b_reject)
+
         self.b_run = QPushButton(self.centralwidget)
         self.b_run.setObjectName(u"b_run")
         self.b_run.setMinimumSize(QSize(100, 50))
@@ -117,6 +126,17 @@ class Ui_MainWindow(object):
 
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_2)
+
+        self.l_text = QLabel(self.centralwidget)
+        self.l_text.setObjectName(u"l_text")
+        self.l_text.setMinimumSize(QSize(150, 20))
+        self.l_text.setMaximumSize(QSize(150, 20))
+        font = QFont()
+        font.setBold(True)
+        self.l_text.setFont(font)
+        self.l_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.verticalLayout_2.addWidget(self.l_text)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
@@ -167,6 +187,13 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_3.addLayout(self.horizontalLayout)
 
+        self.l_filename = QLabel(self.centralwidget)
+        self.l_filename.setObjectName(u"l_filename")
+        self.l_filename.setMinimumSize(QSize(0, 20))
+        self.l_filename.setMaximumSize(QSize(16777215, 20))
+
+        self.verticalLayout_3.addWidget(self.l_filename)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -191,12 +218,15 @@ class Ui_MainWindow(object):
         self.l3.setText(QCoreApplication.translate("MainWindow", u"Downsample", None))
         self.l0.setText(QCoreApplication.translate("MainWindow", u"Sigma", None))
         self.le_gauss_sigma.setText(QCoreApplication.translate("MainWindow", u"10", None))
+        self.b_reject.setText(QCoreApplication.translate("MainWindow", u"Reject", None))
         self.b_run.setText(QCoreApplication.translate("MainWindow", u"Update", None))
         self.b_export.setText(QCoreApplication.translate("MainWindow", u"Export", None))
+        self.l_text.setText(QCoreApplication.translate("MainWindow", u"Press ENTER to reject", None))
         self.l4.setText(QCoreApplication.translate("MainWindow", u"Time:", None))
         self.ltime.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.l5.setText(QCoreApplication.translate("MainWindow", u"Tide:", None))
         self.ltide.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.l_filename.setText(QCoreApplication.translate("MainWindow", u"Filename", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
     # retranslateUi
 
