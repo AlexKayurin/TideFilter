@@ -2,21 +2,20 @@ import os
 import sys
 import json
 from datetime import datetime
-from scipy.ndimage import gaussian_filter1d
+from scipy.signal import savgol_filter
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtGui
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QFileDialog, QMessageBox
-from PySide6.QtCore import Qt
 import pyqtgraph as pg
-import _UI_Control_GAUSS
+import _UI_Control
 
 
 OPTIONS = QFileDialog.Options()
 
 
-class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -25,13 +24,11 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         self.vb_tideplot = self.tideplot.plotItem.vb  # for correct mouse tracking
 
         # set form
-        self.le_gauss_sigma.setValidator(QIntValidator())
-        self.l_text.setText('')
-        self.l_filename.setText('')
-
+        self.le_sg_win.setValidator(QIntValidator())
+        self.le_sg_ord.setValidator(QIntValidator())
+        self.le_ma_win.setValidator(QIntValidator())
         # set signals
         self.tideplot.scene().sigMouseMoved.connect(self.mouse_moved)
-        self.b_reject.clicked.connect(self.reject)
         self.b_run.clicked.connect(self.runfilters)
         self.b_export.clicked.connect(self.export)
         self.sp_subsample.valueChanged.connect(self.downsample)
@@ -40,9 +37,6 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         # set graph axis
         self.h_axis = pg.DateAxisItem(orientation='bottom')
         self.tideplot.setAxisItems({'bottom': self.h_axis})
-
-        # variables
-        self.rejectflag = False
 
 
     def closeEvent(self, e):
@@ -62,20 +56,9 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
 
 
     def mouse_moved(self, e):
-        self.cursor = self.vb_tideplot.mapSceneToView(e)
-        self.ltime.setText(f'{datetime.fromtimestamp(int(self.cursor.x()))}')
-        self.ltide.setText(f'{round(self.cursor.y(), 2)}')
-
-
-    def keyPressEvent(self, e):
-        if self.rejectflag:
-            if e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
-                # delete from DF where: left ROI limit < 'Timestamp' < right ROI limit
-                condition = ((self.tide['Timestamp'] > self.roi.pos()[0]) &
-                             (self.tide['Timestamp'] < (self.roi.pos()[0] + self.roi.size()[0])))
-                self.tide = self.tide[~condition]
-
-                self.downsample()
+        cursor = self.vb_tideplot.mapSceneToView(e)
+        self.ltime.setText(f'{datetime.fromtimestamp(int(cursor.x()))}')
+        self.ltide.setText(f'{round(cursor.y(), 2)}')
 
 
     def dragEnterEvent(self, e):
@@ -100,7 +83,6 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         if fName:
             LASTFOLDER = os.path.dirname(fName)
 
-            self.l_filename.setText(os.path.basename(fName))
             try:
                 self.tide = pd.read_csv(fName, sep=r';|\s|\t|,', skiprows=[x for x in range(int(LINESTOSKIP))],
                                         skip_blank_lines=True, header=None, names=FIELDFORMAT,
@@ -139,7 +121,8 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         try:
             self.plotlegend.removeItem(self.tidecurve)
             self.plotlegend.removeItem(self.tidecurvesub)
-            self.plotlegend.removeItem(self.g1d)
+            self.plotlegend.removeItem(self.sgf)
+            self.plotlegend.removeItem(self.sga)
         except:
             pass
 
@@ -147,9 +130,9 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
 
         parent_box = pg.PlotDataItem()
         self.tidecurve = pg.PlotDataItem(x=self.tide['Timestamp'], y=self.tide['Tide'],
-                                         pen=pg.mkPen((255, 128, 0, 255), width=1))
+                                         pen=pg.mkPen((204, 0, 204, 255), width=0.5))
         self.tidecurvesub = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.tidesub['Tide'],
-                                            pen=pg.mkPen((204, 0, 204, 255), width=0.5))
+                                            pen=pg.mkPen((255, 128, 0, 255), width=0.5))
 
         self.tidecurve.setParentItem(parent_box)
         self.tidecurvesub.setParentItem(parent_box)
@@ -161,58 +144,36 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         self.plotlegend.addItem(self.tidecurve, 'Raw')
         self.plotlegend.addItem(self.tidecurvesub, 'Raw Subsampled')
 
-        self.plotroi()
-
-
-    def reject(self):
-        self.rejectflag = True if not self.rejectflag else False
-
-        if self.rejectflag:
-            self.b_reject.setChecked(True)
-            self.b_reject.setStyleSheet("background-color: cyan")
-            self.l_text.setText('Press ENTER to reject')
-            self.plotroi()
-        else:
-            self.b_reject.setChecked(False)
-            self.b_reject.setStyleSheet("background-color: none")
-            self.l_text.setText('')
-            try:
-                self.tideplot.removeItem(self.roi)
-            except:
-                pass
-
-
-    def plotroi(self):
-        if self.rejectflag:
-            aspect = self.vb_tideplot.getAspectRatio()
-            span = (np.max(self.tideplot.viewRange()[1]) - np.min(self.tideplot.viewRange()[1])) / 10
-            self.roi = pg.RectROI([self.tide.loc[:, 'Timestamp'].mean(), self.tide.loc[:, 'Tide'].mean()],
-                                  [span / aspect, span], pen='r')
-            self.tideplot.addItem(self.roi)
-
 
     def runfilters(self):
-        # Gaussian 1D filter-------------------------------------------------------------------------------------------
-        gauss_sigma = int(self.le_gauss_sigma.text())
-        self.gaussfiltered = gaussian_filter1d(self.tidesub['Tide'], gauss_sigma)
-        # Gaussian 1D filter-------------------------------------------------------------------------------------------
-
-        self.tidesub['Filtered'] = self.gaussfiltered
-
-        #  plot
-        self.rejectflag = True
-        self.reject()
         self.plotraw()
+
+        mawin = int(self.le_ma_win.text())
+
+        # sav_gol filter & moving average convolution------------------------------------------------------------------
+        self.sgfiltered = savgol_filter(self.tidesub['Tide'], int(self.le_sg_win.text()),
+                                        int(self.le_sg_ord.text()), mode='nearest')
+        self.sgaveraged = np.convolve(self.sgfiltered, np.ones(mawin),
+                                      'same') / mawin
+        self.sgaveraged[:mawin] = self.sgfiltered[:mawin]
+        self.sgaveraged[-mawin:] = self.sgfiltered[-mawin:]
+
+        self.tidesub['Filtered'] = self.sgaveraged
+
         parent_box = pg.PlotDataItem()
+        self.sgf = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.sgfiltered,
+                                         pen=pg.mkPen((0, 204, 204, 255), width=1))
+        self.sga = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.sgaveraged,
+                                         pen=pg.mkPen((255, 204, 204, 255), width=4))
+        # sav_gol filter & moving average convolution------------------------------------------------------------------
 
-        self.g1d = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.gaussfiltered,
-                                         pen=pg.mkPen((0, 255, 0, 255), width=4))
+        self.sgf.setParentItem(parent_box)
+        self.sga.setParentItem(parent_box)
 
-        self.g1d.setParentItem(parent_box)
         self.tideplot.addItem(parent_box)
 
-        # legend
-        self.plotlegend.addItem(self.g1d, 'Gauss Filtered')
+        self.plotlegend.addItem(self.sgf, 'SG Filtered')
+        self.plotlegend.addItem(self.sga, 'SG Averaged')
 
 
     def export(self):
@@ -250,7 +211,7 @@ def main():
     # executable parent folder and path to config.bin
     iconhere = False
     parentfold = os.path.dirname(sys.argv[0])
-    configfold = os.path.join(parentfold, '_internal')
+    configfold = os.path.join(parentfold, '../_src/_internal')
     configfile = os.path.join(configfold, 'cfg.json')
     iconfile = os.path.join(configfold, 'blob.ico')
 

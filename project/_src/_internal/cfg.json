@@ -1,5 +1,5 @@
 {
-"LASTFOLDER": "C:/_AK/Py313/TideFilter_OceanMarlin/project/RTK_TIDE",
+"LASTFOLDER": "C:/_AK/Py313/TideFilter/TideFilter/project/RTK_TIDE",
 "LINESTOSKIP": 0,
 "FIELDFORMAT": [
 "Date",
@@ -9,5 +9,9 @@
 "DATETIMEFORMAT": [
 "%d/%m/%Y",
 "%H:%M:%S"
-]
+],
+"SUBSAMPLE": 10,
+"SIGMA": 1,
+"#Date format examples:": "30012026 - %d%m%Y; 30/01/2026 - %d/%m/%Y; 30-01-2026 - %d-%m-%Y",
+"#Time format examples: ": "235959 - %H%M%S; 23:59:59 - %H:%M:%S; 23:59:59.000 - %H:%M:%S.%f"
 }

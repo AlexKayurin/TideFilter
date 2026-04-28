@@ -45,6 +45,25 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2 = QVBoxLayout()
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.l4_2 = QLabel(self.centralwidget)
+        self.l4_2.setObjectName(u"l4_2")
+        self.l4_2.setMinimumSize(QSize(75, 20))
+        self.l4_2.setMaximumSize(QSize(75, 20))
+
+        self.horizontalLayout_4.addWidget(self.l4_2)
+
+        self.sp_linestoskip = QSpinBox(self.centralwidget)
+        self.sp_linestoskip.setObjectName(u"sp_linestoskip")
+        self.sp_linestoskip.setMinimumSize(QSize(75, 20))
+        self.sp_linestoskip.setMaximumSize(QSize(75, 20))
+
+        self.horizontalLayout_4.addWidget(self.sp_linestoskip)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_4)
+
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
         self.l3 = QLabel(self.centralwidget)
@@ -212,9 +231,10 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Tide Filter", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Gaussian Tide Filter", None))
         self.actionLoad.setText(QCoreApplication.translate("MainWindow", u"Load", None))
         self.actionExport.setText(QCoreApplication.translate("MainWindow", u"Export", None))
+        self.l4_2.setText(QCoreApplication.translate("MainWindow", u"Lines to skip", None))
         self.l3.setText(QCoreApplication.translate("MainWindow", u"Downsample", None))
         self.l0.setText(QCoreApplication.translate("MainWindow", u"Sigma", None))
         self.le_gauss_sigma.setText(QCoreApplication.translate("MainWindow", u"10", None))
