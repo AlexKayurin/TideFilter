@@ -283,7 +283,7 @@ def main():
     configfold = os.path.join(parentfold, '_internal')
     configfile = os.path.join(configfold, 'cfg.json')
     logfile = os.path.join(configfold, 'error.log')
-    iconfile = os.path.join(configfold, 'blob.ico')
+    iconfile = os.path.join(configfold, 'icon_tide.ico')
 
     # Remove old log file
     if os.path.isfile(logfile):
