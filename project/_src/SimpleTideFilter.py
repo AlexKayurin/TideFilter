@@ -5,6 +5,7 @@ from datetime import datetime
 import logging
 from statistics import mean
 from scipy.ndimage import gaussian_filter1d
+from scipy.signal import kaiserord, lfilter, firwin, medfilt
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtGui
@@ -12,13 +13,13 @@ from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt
 import pyqtgraph as pg
-import _UI_Control_GAUSS
+import _UI_Control
 
 
 OPTIONS = QFileDialog.Options()
 
 
-class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
+class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -27,14 +28,14 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         self.vb_tideplot = self.tideplot.plotItem.vb  # for correct mouse tracking
 
         # set form
-        self.le_gauss_sigma.setValidator(QIntValidator())
+        self.le_filt_val.setValidator(QIntValidator())
         self.l_text.setText('')
         self.l_filename.setText('')
 
         # set values
         self.sp_linestoskip.setValue(int(LINESTOSKIP))
         self.sp_subsample.setValue(int(SUBSAMPLE))
-        self.le_gauss_sigma.setText(str(SIGMA))
+        self.le_filt_val.setText(str(SIGMA))
 
         # set signals
         self.tideplot.scene().sigMouseMoved.connect(self.mouse_moved)
@@ -45,9 +46,12 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         self.sp_subsample.valueChanged.connect(self.downsample)
         self.actionLoad.triggered.connect(self.selectfile)
         self.actionExport.triggered.connect(self.export)
+        for rb in [self.rb_Gauss, self.rb_FIR, self.rb_Median, self.rb_Mean, ]:
+            rb.toggled.connect(self.setfilter)
         # set graph axis
         self.h_axis = pg.DateAxisItem(orientation='bottom')
         self.tideplot.setAxisItems({'bottom': self.h_axis})
+        self.tideplot.showGrid(x=True, y=True)
 
         # variables
         self.rejectflag = False
@@ -62,7 +66,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
                 'FIELDFORMAT' : FIELDFORMAT,
                 'DATETIMEFORMAT' : DATETIMEFORMAT,
                 'SUBSAMPLE' : self.sp_subsample.value(),
-                'SIGMA' : int(self.le_gauss_sigma.text()),
+                'SIGMA' : int(self.le_filt_val.text()),
                 '#Date format examples:' : '30012026 - %d%m%Y; '
                                            '30/01/2026 - %d/%m/%Y; '
                                            '30-01-2026 - %d-%m-%Y',
@@ -102,6 +106,17 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
     def dropEvent(self, e):
         fName = e.mimeData().text().strip().replace('file:///', '')
         self.loadtide(fName)
+
+
+    def setfilter(self):
+        if self.rb_Gauss.isChecked():
+            self.l_filt_parameter.setText('Sigma')
+        elif self.rb_FIR.isChecked():
+            self.l_filt_parameter.setText('Samples')
+        elif self.rb_Median.isChecked():
+            self.l_filt_parameter.setText('Kernel')
+        elif self.rb_Mean.isChecked():
+            self.l_filt_parameter.setText('Window')
 
 
     def selectfile(self):
@@ -155,6 +170,8 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
 
         # subsample Tide df
         self.tidesub = self.tide.iloc[::self.downrate]
+        self.tidesub['Filtered'] = self.tidesub['Tide']
+        self.tidesub.reset_index(drop=True, inplace=True)
         self.plotraw()
 
 
@@ -162,7 +179,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
         try:
             self.plotlegend.removeItem(self.tidecurve)
             self.plotlegend.removeItem(self.tidecurvesub)
-            self.plotlegend.removeItem(self.g1d)
+            self.plotlegend.removeItem(self.flt)
         except:
             pass
 
@@ -170,9 +187,9 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
 
         parent_box = pg.PlotDataItem()
         self.tidecurve = pg.PlotDataItem(x=self.tide['Timestamp'], y=self.tide['Tide'],
-                                         pen=pg.mkPen((255, 128, 0, 255), width=1))
+                                         pen=pg.mkPen((51, 153, 255, 255), width=2))
         self.tidecurvesub = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.tidesub['Tide'],
-                                            pen=pg.mkPen((204, 0, 204, 255), width=0.5))
+                                            pen=pg.mkPen((255, 153, 51, 255), width=0.5))
 
         self.tidecurve.setParentItem(parent_box)
         self.tidecurvesub.setParentItem(parent_box)
@@ -216,12 +233,48 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
 
     def runfilters(self):
         try:
-            # Gaussian 1D filter-------------------------------------------------------------------------------------------
-            gauss_sigma = int(self.le_gauss_sigma.text())
-            self.gaussfiltered = gaussian_filter1d(self.tidesub['Tide'], gauss_sigma)
-            # Gaussian 1D filter-------------------------------------------------------------------------------------------
+            if self.rb_Gauss.isChecked():
+                # Gaussian 1D filter
+                gauss_sigma = int(self.le_filt_val.text())
+                self.filtered = gaussian_filter1d(self.tidesub['Tide'], gauss_sigma)
+                self.tidesub['Filtered'] = self.filtered
 
-            self.tidesub['Filtered'] = self.gaussfiltered
+            elif self.rb_FIR.isChecked():
+                # FIR filter
+                sample_rate = int(self.le_filt_val.text())
+                nyq_rate = sample_rate / 2
+                width = 5 / nyq_rate
+                ripple_db = 60
+                cutoff_hz = 1
+
+                N, beta = kaiserord(ripple_db, width)
+                taps = firwin(N, cutoff_hz / nyq_rate, window=('kaiser', beta))
+
+                # The phase delay of the filtered signal.
+                self.delay = int(0.5 * (N - 1))
+
+                # Use lfilter to filter x with the FIR filter.
+                self.filtered = lfilter(taps, 1.0, self.tidesub['Tide'])
+
+                # fill 'Filtered' field
+                self.tidesub.iloc[0:-self.delay, 5] = self.filtered[self.delay:]
+                self.tidesub.iloc[0:self.delay, 5] = self.filtered[2 * self.delay]
+                self.tidesub.iloc[-self.delay:, 5] = self.filtered[-1]
+
+            elif self.rb_Median.isChecked():
+                # Median filter
+                kernel = int(self.le_filt_val.text()) + 1 if int(self.le_filt_val.text()) % 2 == 0\
+                    else int(self.le_filt_val.text())
+
+                self.filtered = medfilt(self.tidesub['Tide'], kernel)
+                self.tidesub['Filtered'] = self.filtered
+
+            elif self.rb_Mean.isChecked():
+                # Mean filter
+                kernel = int(self.le_filt_val.text())
+                self.filtered = np.convolve(self.tidesub['Tide'], np.ones(kernel), 'same') / kernel
+                self.tidesub['Filtered'] = self.filtered
+
 
             #  plot
             self.rejectflag = True
@@ -229,14 +282,15 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control_GAUSS.Ui_MainWindow):
             self.plotraw()
             parent_box = pg.PlotDataItem()
 
-            self.g1d = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.gaussfiltered,
-                                             pen=pg.mkPen((0, 255, 0, 255), width=4))
+            self.flt = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.tidesub['Filtered'],
+                                             pen=pg.mkPen((255, 0, 255, 255), width=4))
 
-            self.g1d.setParentItem(parent_box)
+
+            self.flt.setParentItem(parent_box)
             self.tideplot.addItem(parent_box)
 
             # legend
-            self.plotlegend.addItem(self.g1d, 'Gauss Filtered')
+            self.plotlegend.addItem(self.flt, 'Filtered')
 
         except:
             logging.exception('Somthing went wrong, check log file')
@@ -324,7 +378,7 @@ def main():
         icon = QtGui.QIcon(iconfile)
         mc.setWindowIcon(icon)
 
-    mc.setWindowTitle(f'Gaussian Tide Filter - akayurin@gmail com \u00A9 2026')
+    mc.setWindowTitle(f'Tide Filter - akayurin@gmail com \u00A9 2026')
 
     mc.show()
 
