@@ -93,13 +93,21 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
     def keyPressEvent(self, e):
         if self.rejectflag:
             if e.key() == Qt.Key_Delete:
-                # delete from DF where: left ROI limit < 'Timestamp_sh' < right ROI limit &
-                # low ROI limit < 'Tide_sh' < high ROI limit
-                condition = ((self.tide['Timestamp_sh'] > self.roi.pos()[0]) &
-                             (self.tide['Timestamp_sh'] < (self.roi.pos()[0] + self.roi.size()[0])) &
-                             (self.tide['Tide_sh'] > self.roi.pos()[1]) &
-                             (self.tide['Tide_sh'] < (self.roi.pos()[1] + self.roi.size()[1]))
-                             )
+                # delete from DF where:
+                if self.rb_RejectPoint.isChecked():
+                    # left ROI limit < 'Timestamp_sh' < right ROI limit &
+                    # low ROI limit < 'Tide_sh' < high ROI limit
+                    condition = ((self.tide['Timestamp_sh'] > self.roi.pos()[0]) &
+                                 (self.tide['Timestamp_sh'] < (self.roi.pos()[0] + self.roi.size()[0])) &
+                                 (self.tide['Tide_sh'] > self.roi.pos()[1]) &
+                                 (self.tide['Tide_sh'] < (self.roi.pos()[1] + self.roi.size()[1]))
+                                 )
+                if self.rb_RejectTime.isChecked():
+                    # left ROI limit < 'Timestamp_sh' < right ROI limit &
+                    condition = ((self.tide['Timestamp_sh'] > self.roi.pos()[0]) &
+                                 (self.tide['Timestamp_sh'] < (self.roi.pos()[0] + self.roi.size()[0]))
+                                 )
+
                 self.tide = self.tide[~condition]
 
                 self.downsample()
@@ -233,11 +241,13 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
             self.b_reject.setChecked(True)
             self.b_reject.setStyleSheet("background-color: cyan")
             self.l_text.setText('Press DEL to reject')
+            self.groupBox_2.setEnabled(True)
             self.plotroi()
         else:
             self.b_reject.setChecked(False)
             self.b_reject.setStyleSheet("background-color: none")
             self.l_text.setText('')
+            self.groupBox_2.setEnabled(False)
             try:
                 self.tideplot.removeItem(self.roi)
             except:

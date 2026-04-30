@@ -16,10 +16,11 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QGroupBox, QHBoxLayout,
-    QLabel, QLineEdit, QMainWindow, QMenu,
-    QMenuBar, QPushButton, QRadioButton, QSizePolicy,
-    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QFrame, QGroupBox,
+    QHBoxLayout, QLabel, QLineEdit, QMainWindow,
+    QMenu, QMenuBar, QPushButton, QRadioButton,
+    QSizePolicy, QSpacerItem, QSpinBox, QVBoxLayout,
+    QWidget)
 
 from pyqtgraph import PlotWidget
 
@@ -27,7 +28,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(800, 617)
+        MainWindow.resize(800, 717)
         self.actionLoad = QAction(MainWindow)
         self.actionLoad.setObjectName(u"actionLoad")
         self.actionExport = QAction(MainWindow)
@@ -54,6 +55,13 @@ class Ui_MainWindow(object):
         self.ch_showraw.setChecked(True)
 
         self.verticalLayout_2.addWidget(self.ch_showraw)
+
+        self.line_2 = QFrame(self.centralwidget)
+        self.line_2.setObjectName(u"line_2")
+        self.line_2.setFrameShape(QFrame.Shape.HLine)
+        self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.verticalLayout_2.addWidget(self.line_2)
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -115,6 +123,13 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_6)
 
+        self.line = QFrame(self.centralwidget)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.Shape.HLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.verticalLayout_2.addWidget(self.line)
+
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.l7 = QLabel(self.centralwidget)
@@ -155,10 +170,12 @@ class Ui_MainWindow(object):
 
         self.groupBox = QGroupBox(self.centralwidget)
         self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setMinimumSize(QSize(0, 120))
-        self.groupBox.setMaximumSize(QSize(16777215, 120))
+        self.groupBox.setMinimumSize(QSize(0, 0))
+        self.groupBox.setMaximumSize(QSize(16777215, 16777215))
         self.verticalLayout_4 = QVBoxLayout(self.groupBox)
+        self.verticalLayout_4.setSpacing(0)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.rb_Gauss = QRadioButton(self.groupBox)
         self.rb_Gauss.setObjectName(u"rb_Gauss")
         self.rb_Gauss.setChecked(True)
@@ -182,6 +199,29 @@ class Ui_MainWindow(object):
 
 
         self.verticalLayout_2.addWidget(self.groupBox)
+
+        self.groupBox_2 = QGroupBox(self.centralwidget)
+        self.groupBox_2.setObjectName(u"groupBox_2")
+        self.groupBox_2.setEnabled(False)
+        self.groupBox_2.setMinimumSize(QSize(0, 0))
+        self.groupBox_2.setMaximumSize(QSize(16777215, 16777215))
+        self.verticalLayout_5 = QVBoxLayout(self.groupBox_2)
+        self.verticalLayout_5.setSpacing(0)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.rb_RejectTime = QRadioButton(self.groupBox_2)
+        self.rb_RejectTime.setObjectName(u"rb_RejectTime")
+        self.rb_RejectTime.setChecked(True)
+
+        self.verticalLayout_5.addWidget(self.rb_RejectTime)
+
+        self.rb_RejectPoint = QRadioButton(self.groupBox_2)
+        self.rb_RejectPoint.setObjectName(u"rb_RejectPoint")
+
+        self.verticalLayout_5.addWidget(self.rb_RejectPoint)
+
+
+        self.verticalLayout_2.addWidget(self.groupBox_2)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -326,10 +366,13 @@ class Ui_MainWindow(object):
         self.rb_FIR.setText(QCoreApplication.translate("MainWindow", u"FIR", None))
         self.rb_Median.setText(QCoreApplication.translate("MainWindow", u"Median", None))
         self.rb_Mean.setText(QCoreApplication.translate("MainWindow", u"Mean", None))
+        self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Rejection mode", None))
+        self.rb_RejectTime.setText(QCoreApplication.translate("MainWindow", u"Time", None))
+        self.rb_RejectPoint.setText(QCoreApplication.translate("MainWindow", u"Point", None))
         self.b_reject.setText(QCoreApplication.translate("MainWindow", u"Reject", None))
         self.b_run.setText(QCoreApplication.translate("MainWindow", u"Apply", None))
         self.b_export.setText(QCoreApplication.translate("MainWindow", u"Export", None))
-        self.l_text.setText(QCoreApplication.translate("MainWindow", u"Press ENTER to reject", None))
+        self.l_text.setText(QCoreApplication.translate("MainWindow", u"Press DEL to reject", None))
         self.l4.setText(QCoreApplication.translate("MainWindow", u"Time:", None))
         self.ltime.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.l5.setText(QCoreApplication.translate("MainWindow", u"Tide:", None))
