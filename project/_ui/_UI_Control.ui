@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>600</height>
+    <height>617</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,19 +22,47 @@
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="spacing">
+         <number>8</number>
+        </property>
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <item>
+         <widget class="QCheckBox" name="ch_showraw">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Show raw data</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QLabel" name="l4_2">
+           <widget class="QLabel" name="l6">
             <property name="minimumSize">
              <size>
-              <width>75</width>
+              <width>100</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>75</width>
+              <width>100</width>
               <height>20</height>
              </size>
             </property>
@@ -67,13 +95,13 @@
            <widget class="QLabel" name="l3">
             <property name="minimumSize">
              <size>
-              <width>75</width>
+              <width>100</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>75</width>
+              <width>100</width>
               <height>20</height>
              </size>
             </property>
@@ -112,16 +140,16 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
           <item>
-           <widget class="QLabel" name="l0">
+           <widget class="QLabel" name="l_filt_parameter">
             <property name="minimumSize">
              <size>
-              <width>75</width>
+              <width>100</width>
               <height>20</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>75</width>
+              <width>100</width>
               <height>20</height>
              </size>
             </property>
@@ -131,7 +159,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="le_gauss_sigma">
+           <widget class="QLineEdit" name="le_filt_val">
             <property name="minimumSize">
              <size>
               <width>75</width>
@@ -150,6 +178,142 @@
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QLabel" name="l7">
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Apply Z shift (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="le_zshift">
+            <property name="minimumSize">
+             <size>
+              <width>75</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>75</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="l8">
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Apply T shift (s)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="le_tshift">
+            <property name="minimumSize">
+             <size>
+              <width>75</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>75</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>120</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>120</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Filter</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QRadioButton" name="rb_Gauss">
+             <property name="text">
+              <string>Gaussian</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rb_FIR">
+             <property name="text">
+              <string>FIR</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rb_Median">
+             <property name="text">
+              <string>Median</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rb_Mean">
+             <property name="text">
+              <string>Mean</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -211,7 +375,7 @@
                </size>
               </property>
               <property name="text">
-               <string>Update</string>
+               <string>Apply</string>
               </property>
              </widget>
             </item>
@@ -412,7 +576,7 @@
        </size>
       </property>
       <property name="text">
-       <string>Filename</string>
+       <string>Time span</string>
       </property>
      </widget>
     </item>
@@ -438,7 +602,7 @@
   </widget>
   <action name="actionLoad">
    <property name="text">
-    <string>Load</string>
+    <string>Load file(s)</string>
    </property>
   </action>
   <action name="actionExport">

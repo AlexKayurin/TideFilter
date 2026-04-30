@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file '_UI_Control_GAUSS.ui'
+## Form generated from reading UI file '_UI_Control.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.11.0
 ##
@@ -16,10 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QSpacerItem, QSpinBox, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QGroupBox, QHBoxLayout,
+    QLabel, QLineEdit, QMainWindow, QMenu,
+    QMenuBar, QPushButton, QRadioButton, QSizePolicy,
+    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
 
 from pyqtgraph import PlotWidget
 
@@ -27,7 +27,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(800, 617)
         self.actionLoad = QAction(MainWindow)
         self.actionLoad.setObjectName(u"actionLoad")
         self.actionExport = QAction(MainWindow)
@@ -44,15 +44,25 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addWidget(self.tideplot)
 
         self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setSpacing(8)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(6, -1, -1, -1)
+        self.ch_showraw = QCheckBox(self.centralwidget)
+        self.ch_showraw.setObjectName(u"ch_showraw")
+        self.ch_showraw.setMinimumSize(QSize(150, 20))
+        self.ch_showraw.setMaximumSize(QSize(150, 20))
+        self.ch_showraw.setChecked(True)
+
+        self.verticalLayout_2.addWidget(self.ch_showraw)
+
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.l4_2 = QLabel(self.centralwidget)
-        self.l4_2.setObjectName(u"l4_2")
-        self.l4_2.setMinimumSize(QSize(75, 20))
-        self.l4_2.setMaximumSize(QSize(75, 20))
+        self.l6 = QLabel(self.centralwidget)
+        self.l6.setObjectName(u"l6")
+        self.l6.setMinimumSize(QSize(100, 20))
+        self.l6.setMaximumSize(QSize(100, 20))
 
-        self.horizontalLayout_4.addWidget(self.l4_2)
+        self.horizontalLayout_4.addWidget(self.l6)
 
         self.sp_linestoskip = QSpinBox(self.centralwidget)
         self.sp_linestoskip.setObjectName(u"sp_linestoskip")
@@ -68,8 +78,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
         self.l3 = QLabel(self.centralwidget)
         self.l3.setObjectName(u"l3")
-        self.l3.setMinimumSize(QSize(75, 20))
-        self.l3.setMaximumSize(QSize(75, 20))
+        self.l3.setMinimumSize(QSize(100, 20))
+        self.l3.setMaximumSize(QSize(100, 20))
 
         self.horizontalLayout_9.addWidget(self.l3)
 
@@ -88,22 +98,90 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.l0 = QLabel(self.centralwidget)
-        self.l0.setObjectName(u"l0")
-        self.l0.setMinimumSize(QSize(75, 20))
-        self.l0.setMaximumSize(QSize(75, 20))
+        self.l_filt_parameter = QLabel(self.centralwidget)
+        self.l_filt_parameter.setObjectName(u"l_filt_parameter")
+        self.l_filt_parameter.setMinimumSize(QSize(100, 20))
+        self.l_filt_parameter.setMaximumSize(QSize(100, 20))
 
-        self.horizontalLayout_6.addWidget(self.l0)
+        self.horizontalLayout_6.addWidget(self.l_filt_parameter)
 
-        self.le_gauss_sigma = QLineEdit(self.centralwidget)
-        self.le_gauss_sigma.setObjectName(u"le_gauss_sigma")
-        self.le_gauss_sigma.setMinimumSize(QSize(75, 20))
-        self.le_gauss_sigma.setMaximumSize(QSize(75, 20))
+        self.le_filt_val = QLineEdit(self.centralwidget)
+        self.le_filt_val.setObjectName(u"le_filt_val")
+        self.le_filt_val.setMinimumSize(QSize(75, 20))
+        self.le_filt_val.setMaximumSize(QSize(75, 20))
 
-        self.horizontalLayout_6.addWidget(self.le_gauss_sigma)
+        self.horizontalLayout_6.addWidget(self.le_filt_val)
 
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_6)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.l7 = QLabel(self.centralwidget)
+        self.l7.setObjectName(u"l7")
+        self.l7.setMinimumSize(QSize(100, 20))
+        self.l7.setMaximumSize(QSize(100, 20))
+
+        self.horizontalLayout_5.addWidget(self.l7)
+
+        self.le_zshift = QLineEdit(self.centralwidget)
+        self.le_zshift.setObjectName(u"le_zshift")
+        self.le_zshift.setMinimumSize(QSize(75, 20))
+        self.le_zshift.setMaximumSize(QSize(75, 20))
+
+        self.horizontalLayout_5.addWidget(self.le_zshift)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_5)
+
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.l8 = QLabel(self.centralwidget)
+        self.l8.setObjectName(u"l8")
+        self.l8.setMinimumSize(QSize(100, 20))
+        self.l8.setMaximumSize(QSize(100, 20))
+
+        self.horizontalLayout_7.addWidget(self.l8)
+
+        self.le_tshift = QLineEdit(self.centralwidget)
+        self.le_tshift.setObjectName(u"le_tshift")
+        self.le_tshift.setMinimumSize(QSize(75, 20))
+        self.le_tshift.setMaximumSize(QSize(75, 20))
+
+        self.horizontalLayout_7.addWidget(self.le_tshift)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_7)
+
+        self.groupBox = QGroupBox(self.centralwidget)
+        self.groupBox.setObjectName(u"groupBox")
+        self.groupBox.setMinimumSize(QSize(0, 120))
+        self.groupBox.setMaximumSize(QSize(16777215, 120))
+        self.verticalLayout_4 = QVBoxLayout(self.groupBox)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.rb_Gauss = QRadioButton(self.groupBox)
+        self.rb_Gauss.setObjectName(u"rb_Gauss")
+        self.rb_Gauss.setChecked(True)
+
+        self.verticalLayout_4.addWidget(self.rb_Gauss)
+
+        self.rb_FIR = QRadioButton(self.groupBox)
+        self.rb_FIR.setObjectName(u"rb_FIR")
+
+        self.verticalLayout_4.addWidget(self.rb_FIR)
+
+        self.rb_Median = QRadioButton(self.groupBox)
+        self.rb_Median.setObjectName(u"rb_Median")
+
+        self.verticalLayout_4.addWidget(self.rb_Median)
+
+        self.rb_Mean = QRadioButton(self.groupBox)
+        self.rb_Mean.setObjectName(u"rb_Mean")
+
+        self.verticalLayout_4.addWidget(self.rb_Mean)
+
+
+        self.verticalLayout_2.addWidget(self.groupBox)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -232,21 +310,31 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Gaussian Tide Filter", None))
-        self.actionLoad.setText(QCoreApplication.translate("MainWindow", u"Load", None))
+        self.actionLoad.setText(QCoreApplication.translate("MainWindow", u"Load file(s)", None))
         self.actionExport.setText(QCoreApplication.translate("MainWindow", u"Export", None))
-        self.l4_2.setText(QCoreApplication.translate("MainWindow", u"Lines to skip", None))
+        self.ch_showraw.setText(QCoreApplication.translate("MainWindow", u"Show raw data", None))
+        self.l6.setText(QCoreApplication.translate("MainWindow", u"Lines to skip", None))
         self.l3.setText(QCoreApplication.translate("MainWindow", u"Downsample", None))
-        self.l0.setText(QCoreApplication.translate("MainWindow", u"Sigma", None))
-        self.le_gauss_sigma.setText(QCoreApplication.translate("MainWindow", u"10", None))
+        self.l_filt_parameter.setText(QCoreApplication.translate("MainWindow", u"Sigma", None))
+        self.le_filt_val.setText(QCoreApplication.translate("MainWindow", u"10", None))
+        self.l7.setText(QCoreApplication.translate("MainWindow", u"Apply Z shift (m)", None))
+        self.le_zshift.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.l8.setText(QCoreApplication.translate("MainWindow", u"Apply T shift (s)", None))
+        self.le_tshift.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Filter", None))
+        self.rb_Gauss.setText(QCoreApplication.translate("MainWindow", u"Gaussian", None))
+        self.rb_FIR.setText(QCoreApplication.translate("MainWindow", u"FIR", None))
+        self.rb_Median.setText(QCoreApplication.translate("MainWindow", u"Median", None))
+        self.rb_Mean.setText(QCoreApplication.translate("MainWindow", u"Mean", None))
         self.b_reject.setText(QCoreApplication.translate("MainWindow", u"Reject", None))
-        self.b_run.setText(QCoreApplication.translate("MainWindow", u"Update", None))
+        self.b_run.setText(QCoreApplication.translate("MainWindow", u"Apply", None))
         self.b_export.setText(QCoreApplication.translate("MainWindow", u"Export", None))
         self.l_text.setText(QCoreApplication.translate("MainWindow", u"Press ENTER to reject", None))
         self.l4.setText(QCoreApplication.translate("MainWindow", u"Time:", None))
         self.ltime.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.l5.setText(QCoreApplication.translate("MainWindow", u"Tide:", None))
         self.ltide.setText(QCoreApplication.translate("MainWindow", u"0", None))
-        self.l_filename.setText(QCoreApplication.translate("MainWindow", u"Filename", None))
+        self.l_filename.setText(QCoreApplication.translate("MainWindow", u"Time span", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
     # retranslateUi
 

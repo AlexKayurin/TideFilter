@@ -9,7 +9,7 @@ from scipy.signal import kaiserord, lfilter, firwin, medfilt
 import numpy as np
 import pandas as pd
 from PySide6 import QtWidgets, QtGui
-from PySide6.QtGui import QIntValidator
+from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import Qt
 import pyqtgraph as pg
@@ -29,6 +29,8 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
         # set form
         self.le_filt_val.setValidator(QIntValidator())
+        self.le_zshift.setValidator(QDoubleValidator())
+        self.le_tshift.setValidator(QIntValidator())
         self.l_text.setText('')
         self.l_filename.setText('')
 
@@ -39,10 +41,10 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
         # set signals
         self.tideplot.scene().sigMouseMoved.connect(self.mouse_moved)
+        self.ch_showraw.stateChanged.connect(self.plotraw)
         self.b_reject.clicked.connect(self.reject)
         self.b_run.clicked.connect(self.runfilters)
         self.b_export.clicked.connect(self.export)
-        self.sp_linestoskip.valueChanged.connect(self.setlinestoskip)
         self.sp_subsample.valueChanged.connect(self.downsample)
         self.actionLoad.triggered.connect(self.selectfile)
         self.actionExport.triggered.connect(self.export)
@@ -91,9 +93,13 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
     def keyPressEvent(self, e):
         if self.rejectflag:
             if e.key() == Qt.Key_Delete:
-                # delete from DF where: left ROI limit < 'Timestamp' < right ROI limit
-                condition = ((self.tide['Timestamp'] > self.roi.pos()[0]) &
-                             (self.tide['Timestamp'] < (self.roi.pos()[0] + self.roi.size()[0])))
+                # delete from DF where: left ROI limit < 'Timestamp_sh' < right ROI limit &
+                # low ROI limit < 'Tide_sh' < high ROI limit
+                condition = ((self.tide['Timestamp_sh'] > self.roi.pos()[0]) &
+                             (self.tide['Timestamp_sh'] < (self.roi.pos()[0] + self.roi.size()[0])) &
+                             (self.tide['Tide_sh'] > self.roi.pos()[1]) &
+                             (self.tide['Tide_sh'] < (self.roi.pos()[1] + self.roi.size()[1]))
+                             )
                 self.tide = self.tide[~condition]
 
                 self.downsample()
@@ -104,8 +110,8 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
 
     def dropEvent(self, e):
-        fName = e.mimeData().text().strip().replace('file:///', '')
-        self.loadtide(fName)
+        fNames = e.mimeData().text().strip().replace('file:///', '')
+        self.loadtide(fNames.split('\n'))
 
 
     def setfilter(self):
@@ -120,57 +126,67 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
 
     def selectfile(self):
-        fName, _ = QFileDialog.getOpenFileName(self, 'Load tide file', f'{LASTFOLDER}',
+        fNames, _ = QFileDialog.getOpenFileNames(self, 'Load tide file', f'{LASTFOLDER}',
                                                'ASCII tide files (*.*)', options=OPTIONS)
-        if fName:
-            self.loadtide(fName)
+        if fNames:
+            self.loadtide(fNames)
 
 
-    def loadtide(self, fName):
+    def loadtide(self, fNames):
         global LASTFOLDER
 
-        if fName:
-            LASTFOLDER = os.path.dirname(fName)
+        if fNames:
+            LASTFOLDER = os.path.dirname(fNames[0])
 
-            self.l_filename.setText(os.path.basename(fName))
             try:
-                self.tide = pd.read_csv(fName, sep=r',|;|\s|\t|,', skiprows=[x for x in range(int(LINESTOSKIP))],
-                                        skip_blank_lines=True, header=None, names=FIELDFORMAT,
-                                        dtype='object', engine='python')
+                tides = []
+                for fName in fNames:
+                    singletide = pd.read_csv(fName, sep=r',|;|\s|\t|,',
+                                             skiprows=[x for x in range(int(self.sp_linestoskip.value()))],
+                                             skip_blank_lines=True, header=None, names=FIELDFORMAT,
+                                             dtype='object', engine='python')
 
-                #  add concatenated 'DateTime' col
-                self.tide['DateTime'] = self.tide['Date'] + ' ' + self.tide['Time']
-                # convert date column to datetime.date & time column to datetime.time
-                self.tidedate = pd.to_datetime(self.tide['Date'],
-                                                   format=DATETIMEFORMAT[0], errors='coerce').dt.date
-                self.tidetime = pd.to_datetime(self.tide['Time'],
-                                                   format=DATETIMEFORMAT[1], errors='coerce').dt.time
-                # create and add timestamps col
-                self.tide['Timestamp'] = pd.Series([pd.Timestamp.combine(d, t) for d, t in
-                                                    zip(self.tidedate, self.tidetime)]).astype('int') / 1000000
+                    # #  add concatenated 'DateTime' col
+                    # singletide['DateTime'] = singletide['Date'] + ' ' + singletide['Time']
+                    # convert date column to datetime.date & time column to datetime.time
+                    tidedate = pd.to_datetime(singletide['Date'],
+                                              format=DATETIMEFORMAT[0], errors='coerce').dt.date
+                    tidetime = pd.to_datetime(singletide['Time'],
+                                              format=DATETIMEFORMAT[1], errors='coerce').dt.time
+                    # create and add timestamps (and shifted timestamps) col
+                    singletide['Timestamp'] = pd.Series([pd.Timestamp.combine(d, t) for d, t in
+                                                        zip(tidedate, tidetime)]).astype('int') / 1000000
+                    singletide['Timestamp_sh'] = singletide['Timestamp']
 
-                #  convert 'Tide' str to float and interpolate missing tide
-                self.tide['Tide'] = self.tide['Tide'].astype(float).interpolate(method='linear', limit_area='inside')
+                    #  convert 'Tide' str to float and interpolate missing tide (and add shifted Tide)
+                    singletide['Tide'] = singletide['Tide'].astype(float).interpolate(method='linear',
+                                                                                      limit_area='inside')
+                    singletide['Tide_sh'] = singletide['Tide']
+
+                    # add filtered field
+                    singletide['Filtered'] = singletide['Tide_sh']
+
+                    tides.append(singletide)
+
+                #  concat and sort concatenated tide
+                self.tide = pd.concat(tides)
+                self.tide.sort_values(by=['Timestamp'], inplace=True)
 
                 self.plotlegend = self.tideplot.addLegend()
+
                 self.downsample()
+                # print(self.tide.columns)
 
             except:
-                logging.exception('Could not load tide file')
+                logging.exception(f'Could not load tide file(s): {fNames}')
                 messagepop('Check file (header, format, etc.)')
-
-
-    def setlinestoskip(self):
-        global LINESTOSKIP
-        LINESTOSKIP = self.sp_linestoskip.value()
 
 
     def downsample(self):
         self.downrate = self.sp_subsample.value()
 
-        # subsample Tide df
+        # subsample Tide df and add 'Filtered' col
         self.tidesub = self.tide.iloc[::self.downrate]
-        self.tidesub['Filtered'] = self.tidesub['Tide']
         self.tidesub.reset_index(drop=True, inplace=True)
         self.plotraw()
 
@@ -186,20 +202,26 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         self.tideplot.clear()
 
         parent_box = pg.PlotDataItem()
-        self.tidecurve = pg.PlotDataItem(x=self.tide['Timestamp'], y=self.tide['Tide'],
-                                         pen=pg.mkPen((51, 153, 255, 255), width=2))
-        self.tidecurvesub = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.tidesub['Tide'],
-                                            pen=pg.mkPen((255, 153, 51, 255), width=0.5))
 
-        self.tidecurve.setParentItem(parent_box)
+        if self.ch_showraw.isChecked():
+            self.tidecurve = pg.PlotDataItem(x=self.tide['Timestamp_sh'], y=self.tide['Tide_sh'],
+                                             pen=pg.mkPen((51, 153, 255, 255), width=2))
+            self.tidecurve.setParentItem(parent_box)
+            self.plotlegend.addItem(self.tidecurve, 'Raw')
+
+        self.tidecurvesub = pg.PlotDataItem(x=self.tidesub['Timestamp_sh'], y=self.tidesub['Tide_sh'],
+                                            pen=pg.mkPen((205, 205, 0, 255), width=0.5))
         self.tidecurvesub.setParentItem(parent_box)
         self.tideplot.addItem(parent_box)
-
-        self.tideplot.setXRange(self.tide['Timestamp'].min(), self.tide['Timestamp'].max())
-        self.tideplot.setYRange(self.tide['Tide'].min(), self.tide['Tide'].max())
-
-        self.plotlegend.addItem(self.tidecurve, 'Raw')
         self.plotlegend.addItem(self.tidecurvesub, 'Raw Subsampled')
+
+        self.tideplot.setXRange(self.tidesub['Timestamp_sh'].min(), self.tidesub['Timestamp_sh'].max())
+        self.tideplot.setYRange(self.tidesub['Tide_sh'].min(), self.tidesub['Tide_sh'].max())
+
+        # time span in status string
+        start = datetime.fromtimestamp(self.tidesub.iloc[0, 4])
+        end = datetime.fromtimestamp(self.tidesub.iloc[-1, 4])
+        self.l_filename.setText(f'{start} - {end}')
 
         self.plotroi()
 
@@ -232,11 +254,15 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
 
     def runfilters(self):
+        self.tide['Tide_sh'] = self.tide['Tide'] + float(self.le_zshift.text())
+        self.tide['Timestamp_sh'] = self.tide['Timestamp'] + int(self.le_tshift.text())
+        self.downsample()
+
         try:
             if self.rb_Gauss.isChecked():
                 # Gaussian 1D filter
                 gauss_sigma = int(self.le_filt_val.text())
-                self.filtered = gaussian_filter1d(self.tidesub['Tide'], gauss_sigma)
+                self.filtered = gaussian_filter1d(self.tidesub['Tide_sh'], gauss_sigma)
                 self.tidesub['Filtered'] = self.filtered
 
             elif self.rb_FIR.isChecked():
@@ -251,28 +277,28 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
                 taps = firwin(N, cutoff_hz / nyq_rate, window=('kaiser', beta))
 
                 # The phase delay of the filtered signal.
-                self.delay = int(0.5 * (N - 1))
+                delay = int(0.5 * (N - 1))
 
                 # Use lfilter to filter x with the FIR filter.
-                self.filtered = lfilter(taps, 1.0, self.tidesub['Tide'])
+                self.filtered = lfilter(taps, 1.0, self.tidesub['Tide_sh'])
 
                 # fill 'Filtered' field
-                self.tidesub.iloc[0:-self.delay, 5] = self.filtered[self.delay:]
-                self.tidesub.iloc[0:self.delay, 5] = self.filtered[2 * self.delay]
-                self.tidesub.iloc[-self.delay:, 5] = self.filtered[-1]
+                self.tidesub.iloc[0:-delay, 6] = self.filtered[delay:]
+                self.tidesub.iloc[0:delay, 6] = self.filtered[2 * delay]
+                self.tidesub.iloc[-delay:, 6] = self.filtered[-1]
 
             elif self.rb_Median.isChecked():
-                # Median filter
+                # Median filter / make kernel odd
                 kernel = int(self.le_filt_val.text()) + 1 if int(self.le_filt_val.text()) % 2 == 0\
                     else int(self.le_filt_val.text())
 
-                self.filtered = medfilt(self.tidesub['Tide'], kernel)
+                self.filtered = medfilt(self.tidesub['Tide_sh'], kernel)
                 self.tidesub['Filtered'] = self.filtered
 
             elif self.rb_Mean.isChecked():
                 # Mean filter
                 kernel = int(self.le_filt_val.text())
-                self.filtered = np.convolve(self.tidesub['Tide'], np.ones(kernel), 'same') / kernel
+                self.filtered = np.convolve(self.tidesub['Tide_sh'], np.ones(kernel), 'same') / kernel
                 self.tidesub['Filtered'] = self.filtered
 
 
@@ -280,12 +306,10 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
             self.rejectflag = True
             self.reject()
             self.plotraw()
+
             parent_box = pg.PlotDataItem()
-
-            self.flt = pg.PlotDataItem(x=self.tidesub['Timestamp'], y=self.tidesub['Filtered'],
+            self.flt = pg.PlotDataItem(x=self.tidesub['Timestamp_sh'], y=self.tidesub['Filtered'],
                                              pen=pg.mkPen((255, 0, 255, 255), width=4))
-
-
             self.flt.setParentItem(parent_box)
             self.tideplot.addItem(parent_box)
 
@@ -301,6 +325,11 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         fName, _ = QFileDialog.getSaveFileName(self, 'Export filtered tide', f'{LASTFOLDER}',
                                                'csv file (*.csv);;All Files (*.*)', options=OPTIONS)
         if fName:
+            # Shifted DateTime from timestamp
+            self.tidesub['DateTime'] = [datetime.fromtimestamp(x) for x in self.tidesub['Timestamp_sh']]
+            # round 'Filtered' 3 decimals
+            self.tidesub['Filtered'] = self.tidesub['Filtered'].apply(lambda x: round(x, 3))
+
             self.tidesub.to_csv(fName, columns=['DateTime','Filtered'], index=False, header=False)
 
             messagepop('File exported')
@@ -378,7 +407,7 @@ def main():
         icon = QtGui.QIcon(iconfile)
         mc.setWindowIcon(icon)
 
-    mc.setWindowTitle(f'Tide Filter - akayurin@gmail com \u00A9 2026')
+    mc.setWindowTitle(f'Simple Tide Filter - akayurin@gmail com \u00A9 2026')
 
     mc.show()
 
