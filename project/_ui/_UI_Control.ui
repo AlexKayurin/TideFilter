@@ -7,18 +7,18 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>717</height>
+    <height>991</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Gaussian Tide Filter</string>
+   <string>UniFilter</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <widget class="PlotWidget" name="tideplot" native="true"/>
+       <widget class="PlotWidget" name="dataplot" native="true"/>
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -44,6 +44,28 @@
           </property>
           <property name="text">
            <string>Show raw data</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="ch_showspike">
+          <property name="minimumSize">
+           <size>
+            <width>150</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>20</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Show de-spike limits</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -192,6 +214,48 @@
            <enum>Qt::Orientation::Horizontal</enum>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item>
+           <widget class="QLabel" name="l9">
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Spike threshold</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="le_spike">
+            <property name="minimumSize">
+             <size>
+              <width>75</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>75</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>0.2</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -345,6 +409,59 @@
          </widget>
         </item>
         <item>
+         <widget class="QGroupBox" name="groupBox_3">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Rejection type</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QRadioButton" name="rb_remove">
+             <property name="text">
+              <string>Remove</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rb_interpolate">
+             <property name="text">
+              <string>Interpolate</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <widget class="QGroupBox" name="groupBox_2">
           <property name="enabled">
            <bool>false</bool>
@@ -386,7 +503,7 @@
               <string>Time</string>
              </property>
              <property name="checked">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -394,6 +511,9 @@
             <widget class="QRadioButton" name="rb_RejectPoint">
              <property name="text">
               <string>Point</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -417,6 +537,58 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QPushButton" name="b_Yup">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>100</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>100</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>36</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>up</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="b_Ydown">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>100</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>100</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>36</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>down</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item>
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -460,7 +632,26 @@
                </size>
               </property>
               <property name="text">
-               <string>Apply</string>
+               <string>Filter</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="b_despike">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>De-Spike</string>
               </property>
              </widget>
             </item>
@@ -508,13 +699,13 @@
           <property name="minimumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>110</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>150</width>
-            <height>20</height>
+            <height>110</height>
            </size>
           </property>
           <property name="font">
@@ -526,7 +717,7 @@
            <string>Press DEL to reject</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignCenter</set>
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
           </property>
          </widget>
         </item>
@@ -605,7 +796,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Tide:</string>
+         <string>Value:</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -682,6 +873,8 @@
     </property>
     <addaction name="actionLoad"/>
     <addaction name="actionExport"/>
+    <addaction name="actionLoad_config"/>
+    <addaction name="actionShow_config"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -693,6 +886,16 @@
   <action name="actionExport">
    <property name="text">
     <string>Export</string>
+   </property>
+  </action>
+  <action name="actionLoad_config">
+   <property name="text">
+    <string>Load config</string>
+   </property>
+  </action>
+  <action name="actionShow_config">
+   <property name="text">
+    <string>Show config</string>
    </property>
   </action>
  </widget>

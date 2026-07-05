@@ -1,0 +1,39 @@
+{
+"LASTFOLDER": "D:/AK/PyProj/UniFilter/TideFilter/project/GradData",
+"LINESTOSKIP": 1,
+"FIELDFORMAT": [
+"Sequence Number",
+"[3rd Mainline] Name",
+"Date",
+"Time",
+"Ievoli_Cobal CoG Easting",
+"Ievoli_Cobal CoG Northing",
+"Ievoli_Cobal CoG COG",
+"Ievoli_Cobal CoG SOG",
+"SF_Port_MAG_1 Range to Node",
+"SF_Port_MAG_1 Easting",
+"SF_Port_MAG_1 Northing",
+"Magnetic Field 30001_MAG_SFPort_1_883758 [nT] Value",
+"Value Value0",
+"Depth Value",
+"Altitude Value",
+"Magnetic Field 30005_MAG_SFPort_5_883768 [nT] Value",
+"Value Value1",
+"Value Comment0",
+"Value Comment1",
+"10002_MRU_SF_Port Pitch",
+"10002_MRU_SF_Port Roll"
+],
+"DATETIMEFORMAT": [
+"%d/%m/%Y",
+"%H:%M:%S.%f"
+],
+"SHOWFIELD": "Altitude Value",
+"SUBSAMPLE": 1,
+"SIGMA": 100,
+"SPIKE": 0.04,
+"SHOWSPIKE": 0,
+"SHOWMAXIMIZED": 0,
+"#Date format examples:": "30012026 - %d%m%Y; 30/01/2026 - %d/%m/%Y; 30-01-2026 - %d-%m-%Y",
+"#Time format examples: ": "235959 - %H%M%S; 23:59:59 - %H:%M:%S; 23:59:59.000 - %H:%M:%S.%f"
+}

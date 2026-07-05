@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file '_UI_Control.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.11.0
+## Created by: Qt User Interface Compiler version 6.11.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -28,21 +28,25 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(800, 717)
+        MainWindow.resize(800, 991)
         self.actionLoad = QAction(MainWindow)
         self.actionLoad.setObjectName(u"actionLoad")
         self.actionExport = QAction(MainWindow)
         self.actionExport.setObjectName(u"actionExport")
+        self.actionLoad_config = QAction(MainWindow)
+        self.actionLoad_config.setObjectName(u"actionLoad_config")
+        self.actionShow_config = QAction(MainWindow)
+        self.actionShow_config.setObjectName(u"actionShow_config")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout_3 = QVBoxLayout(self.centralwidget)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.tideplot = PlotWidget(self.centralwidget)
-        self.tideplot.setObjectName(u"tideplot")
+        self.dataplot = PlotWidget(self.centralwidget)
+        self.dataplot.setObjectName(u"dataplot")
 
-        self.horizontalLayout_3.addWidget(self.tideplot)
+        self.horizontalLayout_3.addWidget(self.dataplot)
 
         self.verticalLayout_2 = QVBoxLayout()
         self.verticalLayout_2.setSpacing(8)
@@ -55,6 +59,14 @@ class Ui_MainWindow(object):
         self.ch_showraw.setChecked(True)
 
         self.verticalLayout_2.addWidget(self.ch_showraw)
+
+        self.ch_showspike = QCheckBox(self.centralwidget)
+        self.ch_showspike.setObjectName(u"ch_showspike")
+        self.ch_showspike.setMinimumSize(QSize(150, 20))
+        self.ch_showspike.setMaximumSize(QSize(150, 20))
+        self.ch_showspike.setChecked(True)
+
+        self.verticalLayout_2.addWidget(self.ch_showspike)
 
         self.line_2 = QFrame(self.centralwidget)
         self.line_2.setObjectName(u"line_2")
@@ -130,6 +142,25 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.line)
 
+        self.horizontalLayout_8 = QHBoxLayout()
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.l9 = QLabel(self.centralwidget)
+        self.l9.setObjectName(u"l9")
+        self.l9.setMinimumSize(QSize(100, 20))
+        self.l9.setMaximumSize(QSize(100, 20))
+
+        self.horizontalLayout_8.addWidget(self.l9)
+
+        self.le_spike = QLineEdit(self.centralwidget)
+        self.le_spike.setObjectName(u"le_spike")
+        self.le_spike.setMinimumSize(QSize(75, 20))
+        self.le_spike.setMaximumSize(QSize(75, 20))
+
+        self.horizontalLayout_8.addWidget(self.le_spike)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout_8)
+
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.l7 = QLabel(self.centralwidget)
@@ -200,6 +231,28 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.groupBox)
 
+        self.groupBox_3 = QGroupBox(self.centralwidget)
+        self.groupBox_3.setObjectName(u"groupBox_3")
+        self.groupBox_3.setMinimumSize(QSize(0, 0))
+        self.groupBox_3.setMaximumSize(QSize(16777215, 100))
+        self.verticalLayout_7 = QVBoxLayout(self.groupBox_3)
+        self.verticalLayout_7.setSpacing(0)
+        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
+        self.verticalLayout_7.setContentsMargins(0, 0, 0, 0)
+        self.rb_remove = QRadioButton(self.groupBox_3)
+        self.rb_remove.setObjectName(u"rb_remove")
+
+        self.verticalLayout_7.addWidget(self.rb_remove)
+
+        self.rb_interpolate = QRadioButton(self.groupBox_3)
+        self.rb_interpolate.setObjectName(u"rb_interpolate")
+        self.rb_interpolate.setChecked(True)
+
+        self.verticalLayout_7.addWidget(self.rb_interpolate)
+
+
+        self.verticalLayout_2.addWidget(self.groupBox_3)
+
         self.groupBox_2 = QGroupBox(self.centralwidget)
         self.groupBox_2.setObjectName(u"groupBox_2")
         self.groupBox_2.setEnabled(False)
@@ -211,12 +264,13 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.rb_RejectTime = QRadioButton(self.groupBox_2)
         self.rb_RejectTime.setObjectName(u"rb_RejectTime")
-        self.rb_RejectTime.setChecked(True)
+        self.rb_RejectTime.setChecked(False)
 
         self.verticalLayout_5.addWidget(self.rb_RejectTime)
 
         self.rb_RejectPoint = QRadioButton(self.groupBox_2)
         self.rb_RejectPoint.setObjectName(u"rb_RejectPoint")
+        self.rb_RejectPoint.setChecked(True)
 
         self.verticalLayout_5.addWidget(self.rb_RejectPoint)
 
@@ -228,6 +282,29 @@ class Ui_MainWindow(object):
         self.horizontalSpacer_2 = QSpacerItem(0, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout_2.addItem(self.horizontalSpacer_2)
+
+        self.verticalLayout_6 = QVBoxLayout()
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.b_Yup = QPushButton(self.centralwidget)
+        self.b_Yup.setObjectName(u"b_Yup")
+        self.b_Yup.setMinimumSize(QSize(100, 100))
+        self.b_Yup.setMaximumSize(QSize(100, 100))
+        font = QFont()
+        font.setPointSize(36)
+        self.b_Yup.setFont(font)
+
+        self.verticalLayout_6.addWidget(self.b_Yup)
+
+        self.b_Ydown = QPushButton(self.centralwidget)
+        self.b_Ydown.setObjectName(u"b_Ydown")
+        self.b_Ydown.setMinimumSize(QSize(100, 100))
+        self.b_Ydown.setMaximumSize(QSize(100, 100))
+        self.b_Ydown.setFont(font)
+
+        self.verticalLayout_6.addWidget(self.b_Ydown)
+
+
+        self.horizontalLayout_2.addLayout(self.verticalLayout_6)
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
@@ -246,6 +323,13 @@ class Ui_MainWindow(object):
         self.b_run.setMaximumSize(QSize(100, 50))
 
         self.verticalLayout.addWidget(self.b_run)
+
+        self.b_despike = QPushButton(self.centralwidget)
+        self.b_despike.setObjectName(u"b_despike")
+        self.b_despike.setMinimumSize(QSize(100, 50))
+        self.b_despike.setMaximumSize(QSize(100, 50))
+
+        self.verticalLayout.addWidget(self.b_despike)
 
         self.b_export = QPushButton(self.centralwidget)
         self.b_export.setObjectName(u"b_export")
@@ -266,12 +350,12 @@ class Ui_MainWindow(object):
 
         self.l_text = QLabel(self.centralwidget)
         self.l_text.setObjectName(u"l_text")
-        self.l_text.setMinimumSize(QSize(150, 20))
-        self.l_text.setMaximumSize(QSize(150, 20))
-        font = QFont()
-        font.setBold(True)
-        self.l_text.setFont(font)
-        self.l_text.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.l_text.setMinimumSize(QSize(150, 110))
+        self.l_text.setMaximumSize(QSize(150, 110))
+        font1 = QFont()
+        font1.setBold(True)
+        self.l_text.setFont(font1)
+        self.l_text.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_2.addWidget(self.l_text)
 
@@ -342,6 +426,8 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menuFile.addAction(self.actionLoad)
         self.menuFile.addAction(self.actionExport)
+        self.menuFile.addAction(self.actionLoad_config)
+        self.menuFile.addAction(self.actionShow_config)
 
         self.retranslateUi(MainWindow)
 
@@ -349,14 +435,19 @@ class Ui_MainWindow(object):
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"Gaussian Tide Filter", None))
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"UniFilter", None))
         self.actionLoad.setText(QCoreApplication.translate("MainWindow", u"Load file(s)", None))
         self.actionExport.setText(QCoreApplication.translate("MainWindow", u"Export", None))
+        self.actionLoad_config.setText(QCoreApplication.translate("MainWindow", u"Load config", None))
+        self.actionShow_config.setText(QCoreApplication.translate("MainWindow", u"Show config", None))
         self.ch_showraw.setText(QCoreApplication.translate("MainWindow", u"Show raw data", None))
+        self.ch_showspike.setText(QCoreApplication.translate("MainWindow", u"Show de-spike limits", None))
         self.l6.setText(QCoreApplication.translate("MainWindow", u"Lines to skip", None))
         self.l3.setText(QCoreApplication.translate("MainWindow", u"Downsample", None))
         self.l_filt_parameter.setText(QCoreApplication.translate("MainWindow", u"Sigma", None))
         self.le_filt_val.setText(QCoreApplication.translate("MainWindow", u"10", None))
+        self.l9.setText(QCoreApplication.translate("MainWindow", u"Spike threshold", None))
+        self.le_spike.setText(QCoreApplication.translate("MainWindow", u"0.2", None))
         self.l7.setText(QCoreApplication.translate("MainWindow", u"Apply Z shift (m)", None))
         self.le_zshift.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.l8.setText(QCoreApplication.translate("MainWindow", u"Apply T shift (s)", None))
@@ -366,16 +457,22 @@ class Ui_MainWindow(object):
         self.rb_FIR.setText(QCoreApplication.translate("MainWindow", u"FIR", None))
         self.rb_Median.setText(QCoreApplication.translate("MainWindow", u"Median", None))
         self.rb_Mean.setText(QCoreApplication.translate("MainWindow", u"Mean", None))
+        self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Rejection type", None))
+        self.rb_remove.setText(QCoreApplication.translate("MainWindow", u"Remove", None))
+        self.rb_interpolate.setText(QCoreApplication.translate("MainWindow", u"Interpolate", None))
         self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Rejection mode", None))
         self.rb_RejectTime.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.rb_RejectPoint.setText(QCoreApplication.translate("MainWindow", u"Point", None))
+        self.b_Yup.setText(QCoreApplication.translate("MainWindow", u"up", None))
+        self.b_Ydown.setText(QCoreApplication.translate("MainWindow", u"down", None))
         self.b_reject.setText(QCoreApplication.translate("MainWindow", u"Reject", None))
-        self.b_run.setText(QCoreApplication.translate("MainWindow", u"Apply", None))
+        self.b_run.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
+        self.b_despike.setText(QCoreApplication.translate("MainWindow", u"De-Spike", None))
         self.b_export.setText(QCoreApplication.translate("MainWindow", u"Export", None))
         self.l_text.setText(QCoreApplication.translate("MainWindow", u"Press DEL to reject", None))
         self.l4.setText(QCoreApplication.translate("MainWindow", u"Time:", None))
         self.ltime.setText(QCoreApplication.translate("MainWindow", u"0", None))
-        self.l5.setText(QCoreApplication.translate("MainWindow", u"Tide:", None))
+        self.l5.setText(QCoreApplication.translate("MainWindow", u"Value:", None))
         self.ltide.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.l_filename.setText(QCoreApplication.translate("MainWindow", u"Time span", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))

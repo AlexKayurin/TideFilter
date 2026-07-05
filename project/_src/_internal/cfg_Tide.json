@@ -1,0 +1,21 @@
+{
+"LASTFOLDER": "D:/AK/PyProj/UniFilter/TideFilter/project/RTK_TIDE",
+"LINESTOSKIP": 1,
+"FIELDFORMAT": [
+"Date",
+"Time",
+"Tide"
+],
+"DATETIMEFORMAT": [
+"%d/%m/%Y",
+"%H:%M:%S"
+],
+"SHOWFIELD": "Tide",
+"SUBSAMPLE": 15,
+"SIGMA": 100,
+"SPIKE": 0.05,
+"SHOWSPIKE": 1,
+"SHOWMAXIMIZED": 1,
+"#Date format examples:": "30012026 - %d%m%Y; 30/01/2026 - %d/%m/%Y; 30-01-2026 - %d-%m-%Y",
+"#Time format examples: ": "235959 - %H%M%S; 23:59:59 - %H:%M:%S; 23:59:59.000 - %H:%M:%S.%f"
+}
