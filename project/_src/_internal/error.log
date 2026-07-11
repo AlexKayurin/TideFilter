@@ -1,1 +1,28 @@
-2026-07-05 11:14:12,889 - root - DEBUG - App started
+2026-07-11 10:43:25,226 - root - DEBUG - App started
+2026-07-11 10:44:27,807 - root - ERROR - Could not load data file(s): ['D:/AK/PyProj/UniFilter/TideFilter/project/RTK_TIDE/RTK_TIDE_CONTINUOS - Logfile 18Mar26.txt']
+Traceback (most recent call last):
+  File "D:\AK\PyProj\UniFilter\TideFilter\project\_src\UniFilter.py", line 357, in loaddata
+    singledata = pd.read_csv(fName, sep=r',|;|\s|\t|,',
+                             skiprows=[x for x in range(int(self.sp_linestoskip.value()))],
+                             skip_blank_lines=True, header=None, names=FIELDFORMAT,
+                             dtype='object', engine='python')
+  File "D:\AK\PyProj\UniFilter\.venv\Lib\site-packages\pandas\io\parsers\readers.py", line 873, in read_csv
+    return _read(filepath_or_buffer, kwds)
+  File "D:\AK\PyProj\UniFilter\.venv\Lib\site-packages\pandas\io\parsers\readers.py", line 306, in _read
+    return parser.read(nrows)
+           ~~~~~~~~~~~^^^^^^^
+  File "D:\AK\PyProj\UniFilter\.venv\Lib\site-packages\pandas\io\parsers\readers.py", line 1947, in read
+    ) = self._engine.read(  # type: ignore[attr-defined]
+        ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        nrows
+        ^^^^^
+    )
+    ^
+  File "D:\AK\PyProj\UniFilter\.venv\Lib\site-packages\pandas\io\parsers\python_parser.py", line 317, in read
+    alldata = self._rows_to_cols(content)
+  File "D:\AK\PyProj\UniFilter\.venv\Lib\site-packages\pandas\io\parsers\python_parser.py", line 1242, in _rows_to_cols
+    self._alert_malformed(msg, row_num + 1)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "D:\AK\PyProj\UniFilter\.venv\Lib\site-packages\pandas\io\parsers\python_parser.py", line 964, in _alert_malformed
+    raise ParserError(msg)
+pandas.errors.ParserError: Expected 3 fields in line 3680, saw 5. Error could possibly be due to quotes being ignored when a multi-char delimiter is used.

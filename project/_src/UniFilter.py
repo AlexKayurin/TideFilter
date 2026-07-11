@@ -45,7 +45,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         self.sp_subsample.setValue(int(SUBSAMPLE))
         self.le_filt_val.setText(str(SIGMA))
         self.le_spike.setText(str(SPIKE))
-        if SHOWSPIKE:
+        if SHOWDESPIKELIM:
             self.ch_showspike.setChecked(True)
         else:
             self.ch_showspike.setChecked(False)
@@ -62,6 +62,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         self.b_export.clicked.connect(self.export)
         self.b_Yup.clicked.connect(self.y_change)
         self.b_Ydown.clicked.connect(self.y_change)
+        self.b_Yall.clicked.connect(self.y_change)
         self.sp_subsample.valueChanged.connect(self.downsample)
         self.actionLoad.triggered.connect(self.selectfile)
         self.actionExport.triggered.connect(self.export)
@@ -84,54 +85,66 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         global LASTFOLDER
         global LINESTOSKIP
         global FIELDFORMAT
+        global EXPORTFORMAT
         global DATETIMEFORMAT
         global SHOWFIELD
         global SUBSAMPLE
         global SIGMA
         global SPIKE
-        global SHOWSPIKE
+        global SHOWDESPIKELIM
         global SHOWMAXIMIZED
 
-        with open(fName) as cfgfile:
-            cfg = json.load(cfgfile)
-        LASTFOLDER = cfg['LASTFOLDER']
-        LINESTOSKIP = cfg['LINESTOSKIP']
-        FIELDFORMAT = cfg['FIELDFORMAT']
-        DATETIMEFORMAT = cfg['DATETIMEFORMAT']
-        SHOWFIELD = cfg['SHOWFIELD']
-        SUBSAMPLE  = cfg['SUBSAMPLE']
-        SIGMA = cfg['SIGMA']
-        SPIKE = cfg['SPIKE']
-        SHOWSPIKE = cfg['SHOWSPIKE']
-        SHOWMAXIMIZED = cfg['SHOWMAXIMIZED']
-
         try:
+            with open(fName) as cfgfile:
+                cfg = json.load(cfgfile)
+            LASTFOLDER = cfg['LASTFOLDER']
+            LINESTOSKIP = cfg['LINESTOSKIP']
+            FIELDFORMAT = cfg['FIELDFORMAT']
+            EXPORTFORMAT = cfg['EXPORTFORMAT']
+            DATETIMEFORMAT = cfg['DATETIMEFORMAT']
+            SHOWFIELD = cfg['SHOWFIELD']
+            SUBSAMPLE  = cfg['SUBSAMPLE']
+            SIGMA = cfg['SIGMA']
+            SPIKE = cfg['SPIKE']
+            SHOWDESPIKELIM = cfg['SHOWDESPIKELIM']
+            SHOWMAXIMIZED = cfg['SHOWMAXIMIZED']
+
+            self.sp_linestoskip.setValue(LINESTOSKIP)
+            self.sp_subsample.setValue(SUBSAMPLE)
+            self.le_filt_val.setText(str(SIGMA))
+            self.le_spike.setText(str(SPIKE))
+
             # save cfg file in ..\_internal\cfg.json
-            SHOWSPIKE = 1 if self.ch_showspike.isChecked() else 0
+            SHOWDESPIKELIM = 1 if self.ch_showspike.isChecked() else 0
             CFG = {
+                '#0:': r"Filed names in 'FIELDFORMAT' list MUST BE UNIQUE. Use alternative names (indexes, suffixes, prefixes) if some of them are originally duplicated.",
+                '#1:': r"'Date' and 'Time' fields must be specified in 'FIELDFORMAT' list exactly as it is written (i.e. 'Date' 'Time').",
+                '#2:': r"Date format examples: 30012026 - %d%m%Y; 30/01/2026 - %d/%m/%Y; 30-01-2026 - %d-%m-%Y",
+                '#3:': r"Time format examples: 235959 - %H%M%S; 23:59:59 - %H:%M:%S; 23:59:59.000 - %H:%M:%S.%f",
+                '#4:': r"App adds fields:   'Timestamp_shifted' - shifted DATA timestamp;",
+                '#5:': r"                   'DateTime_Shifted' - shifted DATA Date/Time;",
+                '#6:': r"                   'VALUE_Shift_DeSpike' - shifted and despiked DATA;",
+                '#7:': r"                   'VALUE_Filtered' - shifted, despiked and smoothed DATA;",
+                '#8:': r"                   'VALUE_Delta' - auxiliary field.",
+                '#9:': r"----------------------------------------------------------------------------------------------------------------------------------------------------",
                 'LASTFOLDER' : LASTFOLDER,
                 'LINESTOSKIP' : self.sp_linestoskip.value(),
                 'FIELDFORMAT' : FIELDFORMAT,
+                'EXPORTFORMAT' : EXPORTFORMAT,
                 'DATETIMEFORMAT' : DATETIMEFORMAT,
                 'SHOWFIELD' : SHOWFIELD,
                 'SUBSAMPLE' : self.sp_subsample.value(),
                 'SIGMA' : int(self.le_filt_val.text()),
                 'SPIKE' : float(self.le_spike.text()),
-                'SHOWSPIKE' : SHOWSPIKE,
+                'SHOWDESPIKELIM' : SHOWDESPIKELIM,
                 'SHOWMAXIMIZED' : SHOWMAXIMIZED,
-                '#Date format examples:' : '30012026 - %d%m%Y; '
-                                           '30/01/2026 - %d/%m/%Y; '
-                                           '30-01-2026 - %d-%m-%Y',
-                '#Time format examples: ' : '235959 - %H%M%S; '
-                                            '23:59:59 - %H:%M:%S; '
-                                            '23:59:59.000 - %H:%M:%S.%f'
             }
             json_str = json.dumps(CFG, indent=0)
             with open(configfile, 'w') as outfile:
                 outfile.write(json_str)
         except:
-            logging.exception('Config file was not saved:')
-            messagepop('Config file was not saved!')
+            logging.exception('Config file was not loaded and saved:')
+            messagepop('Config file was not loaded and saved!')
 
 
     def showconfig(self):
@@ -156,28 +169,39 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
             aspect *= 1.2
             self.dataplot.setAspectLocked(True, ratio=aspect)
 
+        if sender == 'b_Yall':
+            self.dataplot.setXRange(self.datasub['Timestamp_shifted'].min(), self.datasub['Timestamp_shifted'].max())
+            self.dataplot.setYRange(self.datasub['VALUE_Shift_DeSpike'].min(),
+                                    self.datasub['VALUE_Shift_DeSpike'].max())
+            self.dataplot.setAspectLocked(False)
+
 
     def closeEvent(self, e):
         try:
             # save cfg file in ..\_internal\cfg.json
-            SHOWSPIKE = 1 if self.ch_showspike.isChecked() else 0
+            SHOWDESPIKELIM = 1 if self.ch_showspike.isChecked() else 0
             CFG = {
+                '#0:': r"Filed names in 'FIELDFORMAT' list MUST BE UNIQUE. Use alternative names (indexes, suffixes, prefixes) if some of them are originally duplicated.",
+                '#1:': r"'Date' and 'Time' fields must be specified in 'FIELDFORMAT' list exactly as it is written (i.e. 'Date' 'Time').",
+                '#2:': r"Date format examples: 30012026 - %d%m%Y; 30/01/2026 - %d/%m/%Y; 30-01-2026 - %d-%m-%Y",
+                '#3:': r"Time format examples: 235959 - %H%M%S; 23:59:59 - %H:%M:%S; 23:59:59.000 - %H:%M:%S.%f",
+                '#4:': r"App adds fields:   'Timestamp_shifted' - shifted DATA timestamp;",
+                '#5:': r"                   'DateTime_Shifted' - shifted DATA Date/Time;",
+                '#6:': r"                   'VALUE_Shift_DeSpike' - shifted and despiked DATA;",
+                '#7:': r"                   'VALUE_Filtered' - shifted, despiked and smoothed DATA;",
+                '#8:': r"                   'VALUE_Delta' - auxiliary field.",
+                '#9:': r"----------------------------------------------------------------------------------------------------------------------------------------------------",
                 'LASTFOLDER' : LASTFOLDER,
                 'LINESTOSKIP' : self.sp_linestoskip.value(),
                 'FIELDFORMAT' : FIELDFORMAT,
+                'EXPORTFORMAT' : EXPORTFORMAT,
                 'DATETIMEFORMAT' : DATETIMEFORMAT,
                 'SHOWFIELD' : SHOWFIELD,
                 'SUBSAMPLE' : self.sp_subsample.value(),
                 'SIGMA' : int(self.le_filt_val.text()),
                 'SPIKE' : float(self.le_spike.text()),
-                'SHOWSPIKE' : SHOWSPIKE,
+                'SHOWDESPIKELIM' : SHOWDESPIKELIM,
                 'SHOWMAXIMIZED' : SHOWMAXIMIZED,
-                '#Date format examples:' : '30012026 - %d%m%Y; '
-                                           '30/01/2026 - %d/%m/%Y; '
-                                           '30-01-2026 - %d-%m-%Y',
-                '#Time format examples: ' : '235959 - %H%M%S; '
-                                            '23:59:59 - %H:%M:%S; '
-                                            '23:59:59.000 - %H:%M:%S.%f'
             }
             json_str = json.dumps(CFG, indent=0)
             with open(configfile, 'w') as outfile:
@@ -192,7 +216,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
         # cursor coordinates
         self.ltime.setText(f'{datetime.fromtimestamp(int(self.cursor.x()))}')
-        self.ltide.setText(f'{round(self.cursor.y(), 2)}')
+        self.ldata.setText(f'{round(self.cursor.y(), 2)}')
 
         # reject rectangle
         if self.rejectflag:
@@ -213,60 +237,59 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
             self.dataplot.addItem(self.reject_rect)
 
 
-    def keyPressEvent(self, e):
-        if self.rejectflag:
-            if e.key() == Qt.Key_1:
-                self.zoom *=0.9
-            if e.key() == Qt.Key_2:
-                self.zoom *=1.1
+    def mousePressEvent(self, e):
+        # track mousePressEvent position to compare with mouseReleaseEvent position to reject spike
+        self.press_pos = e.position()
 
-            # REJECT
-            if e.key() == Qt.Key_Delete:
-                # interpolate/delete from DF where:
-                if self.rb_RejectPoint.isChecked():
-                    # left ROI limit < 'Timestamp_shifted' < right ROI limit &
-                    # low ROI limit < 'VALUE_Shifted' < high ROI limit
-                    condition = ((self.datasub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
-                                 (self.datasub['Timestamp_shifted'] < (self.cursor.x() + self.h_span)) &
-                                 (self.datasub['VALUE_Shifted'] > (self.cursor.y() - self.v_span)) &
-                                 (self.datasub['VALUE_Shifted'] < (self.cursor.y() + self.v_span))
-                                 )
-                if self.rb_RejectTime.isChecked():
-                    # left ROI limit < 'Timestamp_shifted' < right ROI limit &
-                    condition = ((self.datasub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
-                                 (self.datasub['Timestamp_shifted'] < (self.cursor.x() + self.h_span))
-                                 )
 
-                if self.rb_interpolate.isChecked():
-                    self.datasub.loc[condition, 'VALUE_Shifted'] = np.nan
-                    x = self.datasub['VALUE_Shifted'].interpolate()
-                    self.datasub.loc[:, 'VALUE_Shifted'] = x
-                    self.datasub.loc[:, 'VALUE_Filtered'] = x
+    def mouseReleaseEvent(self, e):
+        self.release_pos = e.position()
 
-                if self.rb_remove.isChecked():
-                    self.datasub = self.datasub[~condition]
+        # REJECT
+        if e.button() == Qt.LeftButton and self.press_pos == self.release_pos:
+            # interpolate/delete from DF where:
+            # left ROI limit < 'Timestamp_shifted' < right ROI limit &
+            # low ROI limit < 'VALUE_Shift_DeSpike' < high ROI limit
+            condition = ((self.datasub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
+                         (self.datasub['Timestamp_shifted'] < (self.cursor.x() + self.h_span)) &
+                         (self.datasub['VALUE_Shift_DeSpike'] > (self.cursor.y() - self.v_span)) &
+                         (self.datasub['VALUE_Shift_DeSpike'] < (self.cursor.y() + self.v_span))
+                         )
 
-            # REACCEPT
-            if e.key() == Qt.Key_Insert:
-                if self.rb_RejectPoint.isChecked():
-                    # left ROI limit < 'Timestamp_shifted' < right ROI limit &
-                    # low ROI limit < 'VALUE_Shifted' < high ROI limit
-                    condition = ((self.datasub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
-                                 (self.datasub['Timestamp_shifted'] < (self.cursor.x() + self.h_span)) &
-                                 (self.datasub[SHOWFIELD] > (self.cursor.y() - self.v_span)) &
-                                 (self.datasub[SHOWFIELD] < (self.cursor.y() + self.v_span))
-                                 )
-                if self.rb_RejectTime.isChecked():
-                    # left ROI limit < 'Timestamp_shifted' < right ROI limit &
-                    condition = ((self.datasub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
-                                 (self.datasub['Timestamp_shifted'] < (self.cursor.x() + self.h_span))
-                                 )
+            if self.rb_interpolate.isChecked():
+                self.datasub.loc[condition, 'VALUE_Shift_DeSpike'] = np.nan
+                x = self.datasub['VALUE_Shift_DeSpike'].interpolate()
+                self.datasub.loc[:, 'VALUE_Shift_DeSpike'] = x
+                self.datasub.loc[:, 'VALUE_Filtered'] = x
 
-                # if self.rb_interpolate.isChecked():
-                self.datasub.loc[condition, 'VALUE_Shifted'] = self.datasub.loc[condition, SHOWFIELD]
-                self.datasub.loc[:, 'VALUE_Filtered'] = self.datasub.loc[:, 'VALUE_Shifted']
+            if self.rb_remove.isChecked():
+                self.datasub = self.datasub[~condition]
 
             self.plotraw()
+
+        # REACCEPT
+        if e.button() == Qt.RightButton and self.press_pos == self.release_pos:
+            # left ROI limit < 'Timestamp_shifted' < right ROI limit &
+            # low ROI limit < 'VALUE_Shift_DeSpike' < high ROI limit
+            condition = ((self.datasub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
+                         (self.datasub['Timestamp_shifted'] < (self.cursor.x() + self.h_span)) &
+                         (self.datasub[SHOWFIELD] > (self.cursor.y() - self.v_span)) &
+                         (self.datasub[SHOWFIELD] < (self.cursor.y() + self.v_span))
+                         )
+
+            # if self.rb_interpolate.isChecked():
+            self.datasub.loc[condition, 'VALUE_Shift_DeSpike'] = self.datasub.loc[condition, SHOWFIELD]
+            self.datasub.loc[:, 'VALUE_Filtered'] = self.datasub.loc[:, 'VALUE_Shift_DeSpike']
+
+            self.plotraw()
+
+
+    def keyPressEvent(self, e):
+        if self.rejectflag:
+            if e.key() == 45:           # Minus
+                self.zoom *=1.1
+            if e.key() == 43:           # Plus
+                self.zoom *=0.9
 
 
     def dragEnterEvent(self, e):
@@ -275,7 +298,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
     def dropEvent(self, e):
         fNames = e.mimeData().text().strip().replace('file:///', '')
-        self.loadtide(fNames.split('\n'))
+        self.loaddata(fNames.split('\n'))
 
 
     def reject_pressed(self):
@@ -284,13 +307,11 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         if self.rejectflag:
             self.b_reject.setChecked(True)
             self.b_reject.setStyleSheet("background-color: cyan")
-            self.l_text.setText('Press DEL to reject\nPress INS to re-accept\nPress 1 to increase eraser\nPress 2 to decrease eraser')
-            self.groupBox_2.setEnabled(True)
+            self.l_text.setText('L Mouse Button to reject\nR Mouse Button to re-accept\n+ to increase eraser\n- to decrease eraser')
         else:
             self.b_reject.setChecked(False)
             self.b_reject.setStyleSheet("background-color: none")
             self.l_text.setText('')
-            self.groupBox_2.setEnabled(False)
             try:
                 self.dataplot.removeItem(self.reject_rect)
             except:
@@ -312,10 +333,10 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         sender = self.sender().objectName()
 
         if sender == 'actionLoad':
-            fNames, _ = QFileDialog.getOpenFileNames(self, 'Load tide file', f'{LASTFOLDER}',
-                                                   'ASCII tide files (*.*)', options=OPTIONS)
+            fNames, _ = QFileDialog.getOpenFileNames(self, 'Load data file', f'{LASTFOLDER}',
+                                                   'ASCII data files (*.*)', options=OPTIONS)
             if fNames:
-                self.loadtide(fNames)
+                self.loaddata(fNames)
 
         if sender == 'actionLoad_config':
             fName, _ = QFileDialog.getOpenFileName(self, 'Load configuration file', f'{configfold}',
@@ -324,44 +345,44 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
                 self.loadconfig(fName)
 
 
-    def loadtide(self, fNames):
+    def loaddata(self, fNames):
         global LASTFOLDER
 
         if fNames:
             LASTFOLDER = os.path.dirname(fNames[0])
 
             try:
-                tides = []
+                datalist = []
                 for fName in fNames:
-                    singletide = pd.read_csv(fName, sep=r',|;|\s|\t|,',
+                    singledata = pd.read_csv(fName, sep=r',|;|\s|\t|,',
                                              skiprows=[x for x in range(int(self.sp_linestoskip.value()))],
                                              skip_blank_lines=True, header=None, names=FIELDFORMAT,
                                              dtype='object', engine='python')
 
                     # #  add concatenated 'DateTime' col
-                    # singletide['DateTime'] = singletide['Date'] + ' ' + singletide['Time']
+                    # singledata['DateTime'] = singledata['Date'] + ' ' + singledata['Time']
                     # convert date column to datetime.date & time column to datetime.time
-                    tidedate = pd.to_datetime(singletide['Date'],
+                    datadate = pd.to_datetime(singledata['Date'],
                                               format=DATETIMEFORMAT[0], errors='coerce').dt.date
-                    tidetime = pd.to_datetime(singletide['Time'],
+                    datatime = pd.to_datetime(singledata['Time'],
                                               format=DATETIMEFORMAT[1], errors='coerce').dt.time
                     # create and add timestamps (and shifted timestamps) col
-                    singletide['Timestamp'] = pd.Series([pd.Timestamp.combine(d, t) for d, t in
-                                                        zip(tidedate, tidetime)]).astype('int') / 1000000
-                    singletide['Timestamp_shifted'] = singletide['Timestamp']
+                    singledata['Timestamp'] = pd.Series([pd.Timestamp.combine(d, t) for d, t in
+                                                        zip(datadate, datatime)]).astype('int') / 1000000
+                    singledata['Timestamp_shifted'] = singledata['Timestamp']
 
-                    #  convert 'Tide' str to float and interpolate missing tide (and add shifted field)
-                    singletide[SHOWFIELD] = singletide[SHOWFIELD].astype(float).interpolate(method='linear',
+                    #  convert 'Data' str to float and interpolate missing data (and add shifted field)
+                    singledata[SHOWFIELD] = singledata[SHOWFIELD].astype(float).interpolate(method='linear',
                                                                                       limit_area='inside')
-                    singletide['VALUE_Shifted'] = singletide[SHOWFIELD]
+                    singledata['VALUE_Shift_DeSpike'] = singledata[SHOWFIELD]
 
                     # add filtered field
-                    singletide['VALUE_Filtered'] = singletide['VALUE_Shifted']
+                    singledata['VALUE_Filtered'] = singledata['VALUE_Shift_DeSpike']
 
-                    tides.append(singletide)
+                    datalist.append(singledata)
 
-                #  concat and sort concatenated tide
-                self.data = pd.concat(tides)
+                #  concat and sort concatenated data
+                self.data = pd.concat(datalist)
                 self.data.sort_values(by=['Timestamp'], inplace=True)
 
                 self.plotlegend = self.dataplot.addLegend()
@@ -369,8 +390,8 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
                 self.downsample()
 
             except:
-                logging.exception(f'Could not load tide file(s): {fNames}')
-                messagepop('Check file (header, format, etc.)')
+                logging.exception(f'Could not load data file(s): {fNames}')
+                messagepop('Check data file (header, format, etc.) and cfg file')
 
 
     def downsample(self):
@@ -379,14 +400,15 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         # subsample ORIGINAL df
         self.datasub = self.data.iloc[::self.downrate].copy()
         self.datasub.reset_index(drop=True, inplace=True)
-        self.datasub[SHOWFIELD] = self.datasub['VALUE_Shifted']
+        self.datasub[SHOWFIELD] = self.datasub['VALUE_Shift_DeSpike']
         self.dataplot.setXRange(self.datasub['Timestamp_shifted'].min(), self.datasub['Timestamp_shifted'].max())
-        self.dataplot.setYRange(self.datasub['VALUE_Shifted'].min(), self.datasub['VALUE_Shifted'].max())
+        self.dataplot.setYRange(self.datasub['VALUE_Shift_DeSpike'].min(), self.datasub['VALUE_Shift_DeSpike'].max())
+        self.dataplot.setAspectLocked(False)
         self.plotraw()
 
 
     def shiftdata(self):
-        self.data['VALUE_Shifted'] = self.data[SHOWFIELD] + float(self.le_zshift.text())
+        self.data['VALUE_Shift_DeSpike'] = self.data[SHOWFIELD] + float(self.le_zshift.text())
         self.data['Timestamp_shifted'] = self.data['Timestamp'] + int(self.le_tshift.text())
 
         self.downsample()
@@ -405,16 +427,16 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         parent_box = pg.PlotDataItem()
 
         if self.ch_showraw.isChecked():
-            self.datacurve = pg.PlotDataItem(x=self.data['Timestamp_shifted'], y=self.data['VALUE_Shifted'],
+            self.datacurve = pg.PlotDataItem(x=self.data['Timestamp_shifted'], y=self.data['VALUE_Shift_DeSpike'],
                                              pen=pg.mkPen((51, 153, 255, 255), width=0.5))
             self.datacurve.setParentItem(parent_box)
             self.plotlegend.addItem(self.datacurve, 'Raw')
 
-        self.datacurvesub = pg.PlotDataItem(x=self.datasub['Timestamp_shifted'], y=self.datasub['VALUE_Shifted'],
+        self.datacurvesub = pg.PlotDataItem(x=self.datasub['Timestamp_shifted'], y=self.datasub['VALUE_Shift_DeSpike'],
                                             pen=pg.mkPen((205, 205, 0, 255), width=1))
         self.datacurvesub.setParentItem(parent_box)
         self.dataplot.addItem(parent_box)
-        self.plotlegend.addItem(self.datacurvesub, 'Raw Subsampled')
+        self.plotlegend.addItem(self.datacurvesub, 'Raw Downsampled')
 
         # time span in status string
         tssh_ix = self.datasub.columns.get_indexer(['Timestamp_shifted'])[0]
@@ -430,7 +452,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
             if self.rb_Gauss.isChecked():
                 # Gaussian 1D filter
                 gauss_sigma = int(self.le_filt_val.text())
-                self.filtered = gaussian_filter1d(self.datasub['VALUE_Shifted'], gauss_sigma)
+                self.filtered = gaussian_filter1d(self.datasub['VALUE_Shift_DeSpike'], gauss_sigma)
                 self.datasub['VALUE_Filtered'] = self.filtered
 
             elif self.rb_FIR.isChecked():
@@ -448,7 +470,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
                 delay = int(0.5 * (N - 1))
 
                 # Use lfilter to filter x with the FIR filter.
-                self.filtered = lfilter(taps, 1.0, self.datasub['VALUE_Shifted'])
+                self.filtered = lfilter(taps, 1.0, self.datasub['VALUE_Shift_DeSpike'])
 
                 # fill 'VALUE_Filtered' field
                 self.datasub.loc[self.datasub.index[0:-delay], 'VALUE_Filtered'] = self.filtered[delay:]
@@ -460,13 +482,13 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
                 kernel = int(self.le_filt_val.text()) + 1 if int(self.le_filt_val.text()) % 2 == 0\
                     else int(self.le_filt_val.text())
 
-                self.filtered = medfilt(self.datasub['VALUE_Shifted'], kernel)
+                self.filtered = medfilt(self.datasub['VALUE_Shift_DeSpike'], kernel)
                 self.datasub['VALUE_Filtered'] = self.filtered
 
             elif self.rb_Mean.isChecked():
                 # Mean filter
                 kernel = int(self.le_filt_val.text())
-                self.filtered = np.convolve(self.datasub['VALUE_Shifted'], np.ones(kernel), 'same') / kernel
+                self.filtered = np.convolve(self.datasub['VALUE_Shift_DeSpike'], np.ones(kernel), 'same') / kernel
                 self.datasub['VALUE_Filtered'] = self.filtered
 
 
@@ -492,7 +514,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
             self.dataplot.addItem(parent_box)
 
             # legend
-            self.plotlegend.addItem(self.flt, 'VALUE_Filtered')
+            self.plotlegend.addItem(self.flt, 'Filtered')
 
         except:
             logging.exception('Somthing went wrong, check log file')
@@ -502,11 +524,11 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
     def despike(self):
         spikevalue = float(self.le_spike.text())
 
-        self.datasub['VALUE_Delta'] = (self.datasub['VALUE_Filtered'] - self.datasub['VALUE_Shifted']).abs()
+        self.datasub['VALUE_Delta'] = (self.datasub['VALUE_Filtered'] - self.datasub['VALUE_Shift_DeSpike']).abs()
         if self.rb_interpolate.isChecked():
-            self.datasub.loc[(self.datasub['VALUE_Delta'] > spikevalue), 'VALUE_Shifted'] = np.nan
-            x = self.datasub['VALUE_Shifted'].interpolate()
-            self.datasub.loc[:, 'VALUE_Shifted'] = x
+            self.datasub.loc[(self.datasub['VALUE_Delta'] > spikevalue), 'VALUE_Shift_DeSpike'] = np.nan
+            x = self.datasub['VALUE_Shift_DeSpike'].interpolate()
+            self.datasub.loc[:, 'VALUE_Shift_DeSpike'] = x
             self.datasub.loc[:, 'VALUE_Filtered'] = x
 
         if self.rb_remove.isChecked():
@@ -517,19 +539,19 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
 
     def export(self):
-        fName, _ = QFileDialog.getSaveFileName(self, 'Export filtered tide', f'{LASTFOLDER}',
+        fName, _ = QFileDialog.getSaveFileName(self, 'Export data', f'{LASTFOLDER}',
                                                'csv file (*.csv);;All Files (*.*)', options=OPTIONS)
         if fName:
             # Shifted DateTime from timestamp
-            # self.datasub['DateTime_Shifted'] = [datetime.fromtimestamp(x) for x in self.datasub['Timestamp_shifted']]
-            self.datasub['DateTime_Shifted'] = [datetime.fromtimestamp(x).strftime(f'{DATETIMEFORMAT[0]} {DATETIMEFORMAT[1]}') for x in self.datasub['Timestamp_shifted']]
-            # # round 'VALUE_Shifted' & 'VALUE_Filtered' 3 decimals
-            # self.datasub['VALUE_Shifted'] = self.datasub['VALUE_Shifted'].apply(lambda x: round(x, 3))
+            self.datasub['DateTime_Shifted'] =\
+                [datetime.fromtimestamp(x).strftime(f'{DATETIMEFORMAT[0]} {DATETIMEFORMAT[1]}') for x in self.datasub['Timestamp_shifted']]
+            # # round 'VALUE_Shift_DeSpike' & 'VALUE_Filtered' 3 decimals
+            # self.datasub['VALUE_Shift_DeSpike'] = self.datasub['VALUE_Shift_DeSpike'].apply(lambda x: round(x, 3))
             # self.datasub['VALUE_Filtered'] = self.datasub['VALUE_Filtered'].apply(lambda x: round(x, 3))
 
-            # self.datasub.to_csv(fName, columns=['DateTime_Shifted','VALUE_Filtered'], index=False, header=False)
+            self.datasub.to_csv(fName, columns=EXPORTFORMAT, index=False, header=True)
 
-            self.datasub.to_csv(fName, index=False)
+            # self.datasub.to_csv(fName, index=False)
 
             messagepop('File exported')
 
@@ -554,12 +576,13 @@ def main():
     global LASTFOLDER
     global LINESTOSKIP
     global FIELDFORMAT
+    global EXPORTFORMAT
     global DATETIMEFORMAT
     global SHOWFIELD
     global SUBSAMPLE
     global SIGMA
     global SPIKE
-    global SHOWSPIKE
+    global SHOWDESPIKELIM
     global SHOWMAXIMIZED
 
 
@@ -586,24 +609,26 @@ def main():
         LASTFOLDER = cfg['LASTFOLDER']
         LINESTOSKIP = cfg['LINESTOSKIP']
         FIELDFORMAT = cfg['FIELDFORMAT']
+        EXPORTFORMAT = cfg['EXPORTFORMAT']
         DATETIMEFORMAT = cfg['DATETIMEFORMAT']
         SHOWFIELD = cfg['SHOWFIELD']
         SUBSAMPLE  = cfg['SUBSAMPLE']
         SIGMA = cfg['SIGMA']
         SPIKE = cfg['SPIKE']
-        SHOWSPIKE = cfg['SHOWSPIKE']
+        SHOWDESPIKELIM = cfg['SHOWDESPIKELIM']
         SHOWMAXIMIZED = cfg['SHOWMAXIMIZED']
 
     except:
         LASTFOLDER = parentfold
         LINESTOSKIP = 0
         FIELDFORMAT = ['Date', 'Time', 'Tide']
+        EXPORTFORMAT = ['DateTime_Shifted', 'Tide', 'VALUE_Shift_DeSpike', 'VALUE_Filtered']
         DATETIMEFORMAT = ['%d/%m/%Y', '%H:%M:%S']
         SHOWFIELD = 'Tide'
         SUBSAMPLE  = 10
         SIGMA = 25
         SPIKE = 0.2
-        SHOWSPIKE = 0
+        SHOWDESPIKELIM = 0
         SHOWMAXIMIZED = 0
 
 
@@ -618,7 +643,7 @@ def main():
         icon = QtGui.QIcon(iconfile)
         mc.setWindowIcon(icon)
 
-    mc.setWindowTitle(f'UniFilter - akayurin@gmail.com \u00A9 2026')
+    mc.setWindowTitle(f'UniFilter v.2 - akayurin@gmail.com \u00A9 2026')
     if SHOWMAXIMIZED:
         mc.showMaximized()
 

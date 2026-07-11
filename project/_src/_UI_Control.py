@@ -253,30 +253,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.groupBox_3)
 
-        self.groupBox_2 = QGroupBox(self.centralwidget)
-        self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setEnabled(False)
-        self.groupBox_2.setMinimumSize(QSize(0, 0))
-        self.groupBox_2.setMaximumSize(QSize(16777215, 16777215))
-        self.verticalLayout_5 = QVBoxLayout(self.groupBox_2)
-        self.verticalLayout_5.setSpacing(0)
-        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.rb_RejectTime = QRadioButton(self.groupBox_2)
-        self.rb_RejectTime.setObjectName(u"rb_RejectTime")
-        self.rb_RejectTime.setChecked(False)
-
-        self.verticalLayout_5.addWidget(self.rb_RejectTime)
-
-        self.rb_RejectPoint = QRadioButton(self.groupBox_2)
-        self.rb_RejectPoint.setObjectName(u"rb_RejectPoint")
-        self.rb_RejectPoint.setChecked(True)
-
-        self.verticalLayout_5.addWidget(self.rb_RejectPoint)
-
-
-        self.verticalLayout_2.addWidget(self.groupBox_2)
-
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalSpacer_2 = QSpacerItem(0, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -285,20 +261,36 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_6 = QVBoxLayout()
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
+        self.l10 = QLabel(self.centralwidget)
+        self.l10.setObjectName(u"l10")
+        self.l10.setMinimumSize(QSize(70, 20))
+        self.l10.setMaximumSize(QSize(70, 20))
+        self.l10.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.verticalLayout_6.addWidget(self.l10)
+
         self.b_Yup = QPushButton(self.centralwidget)
         self.b_Yup.setObjectName(u"b_Yup")
-        self.b_Yup.setMinimumSize(QSize(100, 100))
-        self.b_Yup.setMaximumSize(QSize(100, 100))
+        self.b_Yup.setMinimumSize(QSize(70, 70))
+        self.b_Yup.setMaximumSize(QSize(70, 70))
         font = QFont()
         font.setPointSize(36)
         self.b_Yup.setFont(font)
 
         self.verticalLayout_6.addWidget(self.b_Yup)
 
+        self.b_Yall = QPushButton(self.centralwidget)
+        self.b_Yall.setObjectName(u"b_Yall")
+        self.b_Yall.setMinimumSize(QSize(70, 70))
+        self.b_Yall.setMaximumSize(QSize(70, 70))
+        self.b_Yall.setFont(font)
+
+        self.verticalLayout_6.addWidget(self.b_Yall)
+
         self.b_Ydown = QPushButton(self.centralwidget)
         self.b_Ydown.setObjectName(u"b_Ydown")
-        self.b_Ydown.setMinimumSize(QSize(100, 100))
-        self.b_Ydown.setMaximumSize(QSize(100, 100))
+        self.b_Ydown.setMinimumSize(QSize(70, 70))
+        self.b_Ydown.setMaximumSize(QSize(70, 70))
         self.b_Ydown.setFont(font)
 
         self.verticalLayout_6.addWidget(self.b_Ydown)
@@ -350,8 +342,8 @@ class Ui_MainWindow(object):
 
         self.l_text = QLabel(self.centralwidget)
         self.l_text.setObjectName(u"l_text")
-        self.l_text.setMinimumSize(QSize(150, 110))
-        self.l_text.setMaximumSize(QSize(150, 110))
+        self.l_text.setMinimumSize(QSize(200, 110))
+        self.l_text.setMaximumSize(QSize(200, 110))
         font1 = QFont()
         font1.setBold(True)
         self.l_text.setFont(font1)
@@ -394,12 +386,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.l5)
 
-        self.ltide = QLabel(self.centralwidget)
-        self.ltide.setObjectName(u"ltide")
-        self.ltide.setMinimumSize(QSize(150, 20))
-        self.ltide.setMaximumSize(QSize(150, 20))
+        self.ldata = QLabel(self.centralwidget)
+        self.ldata.setObjectName(u"ldata")
+        self.ldata.setMinimumSize(QSize(150, 20))
+        self.ldata.setMaximumSize(QSize(150, 20))
 
-        self.horizontalLayout.addWidget(self.ltide)
+        self.horizontalLayout.addWidget(self.ldata)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -460,10 +452,9 @@ class Ui_MainWindow(object):
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Rejection type", None))
         self.rb_remove.setText(QCoreApplication.translate("MainWindow", u"Remove", None))
         self.rb_interpolate.setText(QCoreApplication.translate("MainWindow", u"Interpolate", None))
-        self.groupBox_2.setTitle(QCoreApplication.translate("MainWindow", u"Rejection mode", None))
-        self.rb_RejectTime.setText(QCoreApplication.translate("MainWindow", u"Time", None))
-        self.rb_RejectPoint.setText(QCoreApplication.translate("MainWindow", u"Point", None))
+        self.l10.setText(QCoreApplication.translate("MainWindow", u"V Zoom", None))
         self.b_Yup.setText(QCoreApplication.translate("MainWindow", u"up", None))
+        self.b_Yall.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.b_Ydown.setText(QCoreApplication.translate("MainWindow", u"down", None))
         self.b_reject.setText(QCoreApplication.translate("MainWindow", u"Reject", None))
         self.b_run.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
@@ -473,7 +464,7 @@ class Ui_MainWindow(object):
         self.l4.setText(QCoreApplication.translate("MainWindow", u"Time:", None))
         self.ltime.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.l5.setText(QCoreApplication.translate("MainWindow", u"Value:", None))
-        self.ltide.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.ldata.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.l_filename.setText(QCoreApplication.translate("MainWindow", u"Time span", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
     # retranslateUi

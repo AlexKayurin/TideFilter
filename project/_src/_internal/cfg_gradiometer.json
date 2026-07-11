@@ -12,24 +12,42 @@
 "LASTFOLDER": "D:/AK/PyProj/UniFilter/TideFilter/project/RTK_TIDE",
 "LINESTOSKIP": 1,
 "FIELDFORMAT": [
+"Sequence Number",
+"[3rd Mainline] Name",
 "Date",
 "Time",
-"Tide"
+"Ievoli_Cobal CoG Easting",
+"Ievoli_Cobal CoG Northing",
+"Ievoli_Cobal CoG COG",
+"Ievoli_Cobal CoG SOG",
+"SF_Port_MAG_1 Range to Node",
+"SF_Port_MAG_1 Easting",
+"SF_Port_MAG_1 Northing",
+"Magnetic Field 30001_MAG_SFPort_1_883758 [nT] Value",
+"Value Value0",
+"Depth Value",
+"Altitude Value",
+"Magnetic Field 30005_MAG_SFPort_5_883768 [nT] Value",
+"Value Value1",
+"Value Comment0",
+"Value Comment1",
+"10002_MRU_SF_Port Pitch",
+"10002_MRU_SF_Port Roll"
 ],
 "EXPORTFORMAT": [
 "DateTime_Shifted",
-"Tide",
+"Altitude Value",
 "VALUE_Shift_DeSpike",
 "VALUE_Filtered"
 ],
 "DATETIMEFORMAT": [
 "%d/%m/%Y",
-"%H:%M:%S"
+"%H:%M:%S.%f"
 ],
-"SHOWFIELD": "Tide",
-"SUBSAMPLE": 1,
-"SIGMA": 5000,
-"SPIKE": 0.1,
+"SHOWFIELD": "Altitude Value",
+"SUBSAMPLE": 10,
+"SIGMA": 250,
+"SPIKE": 0.05,
 "SHOWDESPIKELIM": 1,
 "SHOWMAXIMIZED": 0
 }

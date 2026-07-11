@@ -462,65 +462,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_2">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="title">
-           <string>Rejection mode</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QRadioButton" name="rb_RejectTime">
-             <property name="text">
-              <string>Time</string>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="rb_RejectPoint">
-             <property name="text">
-              <string>Point</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <spacer name="horizontalSpacer_2">
@@ -541,17 +482,39 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
-             <widget class="QPushButton" name="b_Yup">
+             <widget class="QLabel" name="l10">
               <property name="minimumSize">
                <size>
-                <width>100</width>
-                <height>100</height>
+                <width>70</width>
+                <height>20</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>100</width>
-                <height>100</height>
+                <width>70</width>
+                <height>20</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>V Zoom</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="b_Yup">
+              <property name="minimumSize">
+               <size>
+                <width>70</width>
+                <height>70</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>70</width>
+                <height>70</height>
                </size>
               </property>
               <property name="font">
@@ -565,17 +528,41 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="b_Ydown">
+             <widget class="QPushButton" name="b_Yall">
               <property name="minimumSize">
                <size>
-                <width>100</width>
-                <height>100</height>
+                <width>70</width>
+                <height>70</height>
                </size>
               </property>
               <property name="maximumSize">
                <size>
-                <width>100</width>
-                <height>100</height>
+                <width>70</width>
+                <height>70</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>36</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>0</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="b_Ydown">
+              <property name="minimumSize">
+               <size>
+                <width>70</width>
+                <height>70</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>70</width>
+                <height>70</height>
                </size>
               </property>
               <property name="font">
@@ -698,13 +685,13 @@
          <widget class="QLabel" name="l_text">
           <property name="minimumSize">
            <size>
-            <width>150</width>
+            <width>200</width>
             <height>110</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
-            <width>150</width>
+            <width>200</width>
             <height>110</height>
            </size>
           </property>
@@ -804,7 +791,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="ltide">
+       <widget class="QLabel" name="ldata">
         <property name="minimumSize">
          <size>
           <width>150</width>
