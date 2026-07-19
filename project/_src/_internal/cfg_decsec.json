@@ -8,7 +8,7 @@
 "#6:": "                   'Tide_shifted' - shifted DATA;",
 "#7:": "                   'Tide_filtered' - shifted and smoothed DATA;",
 "#8:": "----------------------------------------------------------------------------------------------------------------------------------------------------",
-"LASTFOLDER": "D:/Qimera/P2378_P2357/Tide/TideData/RTK_Tide_Raw",
+"LASTFOLDER": "D:/AK/PyProj/UniFilter/TideFilter/project/RTK_TIDE",
 "LINESTOSKIP": 0,
 "FIELDFORMAT": [
 "Date",
@@ -21,9 +21,9 @@
 ],
 "DATETIMEFORMAT": [
 "%d/%m/%Y",
-"%H:%M:%S"
+"%H:%M:%S.%f"
 ],
 "SUBSAMPLE": 1,
-"SIGMA": 200,
+"SIGMA": 15,
 "SHOWMAXIMIZED": 0
 }
