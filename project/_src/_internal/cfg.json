@@ -23,6 +23,6 @@
 "%d/%m/%Y",
 "%H:%M:%S"
 ],
-"SUBSAMPLE": 10,
+"SUBSAMPLE": 4,
 "SIGMA": 25
 }

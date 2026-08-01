@@ -242,6 +242,9 @@ class SimpleTideWindow():
             self.tidesub.reset_index(drop=True, inplace=True)
             self.tidesub['Tide'] = self.tidesub['Tide_shifted']
 
+            dpg.fit_axis_data('x_axis_tag')
+            dpg.fit_axis_data('y_axis_tag')
+
             update_plot()
 
 
@@ -307,9 +310,6 @@ class SimpleTideWindow():
             dpg.set_value('tide_series_tag', [xo.tolist(), yo.tolist()])
             dpg.set_value('tidesub_series_tag', [xs.tolist(), ys.tolist()])
             dpg.set_value('tidefilt_series_tag', [xf.tolist(), yf.tolist()])
-
-            dpg.fit_axis_data('x_axis_tag')
-            dpg.fit_axis_data('y_axis_tag')
 
 
         def plot_query_callback(sender, app_data):
