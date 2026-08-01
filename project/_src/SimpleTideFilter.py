@@ -1,4 +1,6 @@
 import os
+import platform
+import subprocess
 import sys
 import json
 import logging
@@ -17,13 +19,15 @@ import DearPyGui_DragAndDrop as dpg_dnd
 
 class SimpleTideWindow():
     def __init__(self,
-                 configfold, configfile, logfile, iconfile,
+                 configfold, configfile, logfile, iconfile, manual, license,
                  LASTFOLDER, LINESTOSKIP, FIELDFORMAT, EXPORTFORMAT,
                  DATETIMEFORMAT, SUBSAMPLE, SIGMA,):
         self.configfold = configfold
         self.configfile = configfile
         self.logfile = logfile
         self.iconfile = iconfile
+        self.manual = manual
+        self.license = license
         self.LASTFOLDER = LASTFOLDER
         self.LINESTOSKIP = LINESTOSKIP
         self.FIELDFORMAT = FIELDFORMAT
@@ -110,6 +114,35 @@ class SimpleTideWindow():
                 self.tidesub.loc[:, 'Tide_filtered'] = self.tidesub.loc[:, 'Tide_shifted']
 
                 update_plot()
+
+
+        def edit_settings(sender):
+            if sender == 'fileformat_tag':
+                self.FIELDFORMAT = dpg.get_value('fileformat_tag').split(',')
+                print(self.FIELDFORMAT)
+            if sender == 'dateformat_tag':
+                self.DATETIMEFORMAT[0] = dpg.get_value('dateformat_tag')
+            if sender == 'timeformat_tag':
+                self.DATETIMEFORMAT[1] = dpg.get_value('timeformat_tag')
+
+
+        def show_settings():
+            # show configuration
+            platf = platform.system()
+            if platf == 'Linux':
+                subprocess.call(['xdg-open', self.configfile])  # , check=True)
+            if platf == 'Windows':
+                os.startfile(self.configfile)
+
+
+        def open_manual(sender):
+            # open application manual/license
+            to_open = self.manual if sender == 'manual_tag' else self.license
+            platf = platform.system()
+            if platf == 'Linux':
+                subprocess.call(['xdg-open', to_open])  # , check=True)
+            if platf == 'Windows':
+                os.startfile(to_open)
 
 
         def drop(data, keys):
@@ -302,6 +335,14 @@ class SimpleTideWindow():
                     category=dpg.mvThemeCat_Plots
                 )
 
+        # text entry theme
+        with dpg.theme() as text_theme:
+            with dpg.theme_component(dpg.mvInputText):
+                # Change text color (Green)
+                dpg.add_theme_color(dpg.mvThemeCol_Text, (0, 255, 0, 255))
+                # # Change background box color (Dark Gray)
+                # dpg.add_theme_color(dpg.mvThemeCol_FrameBg, (50, 50, 50, 255))
+
 
         # open files dialog
         with dpg.file_dialog(label='Load tide file(s)', directory_selector=False, show=False, callback=loadtidefiles,
@@ -322,14 +363,18 @@ class SimpleTideWindow():
         with dpg.window(tag='Win_tag'):
             # Menu bar
             with dpg.menu_bar():
-                with dpg.menu(label='File'):
+                with dpg.menu(label='Menu'):
                     dpg.add_menu_item(label="Load tide(s)...", callback=lambda: dpg.show_item('open_tides_dialog'))
                     dpg.add_menu_item(label="Save filtered...", callback=lambda: dpg.show_item('export_tide_dialog'))
+                    dpg.add_menu_item(label="Show settings file...", callback=show_settings)
+                    dpg.add_menu_item(label="Manual", tag='manual_tag', callback=open_manual)
+                    dpg.add_menu_item(label="License", tag='license_tag', callback=open_manual)
+
 
             # Plot
             with dpg.plot(label='Tide', tag='tideplot_tag', use_24hour_clock=True, use_ISO8601 =True,
                           query=True, callback=plot_query_callback,
-                          width=-1, height=-115):
+                          width=-1, height=-140):
                 dpg.add_plot_legend()
                 dpg.add_plot_axis(dpg.mvXAxis, label='Time', tag='x_axis_tag', scale=mvPlotScale_Time)
                 dpg.add_plot_axis(dpg.mvYAxis, label='Tide', tag='y_axis_tag')
@@ -343,8 +388,28 @@ class SimpleTideWindow():
                 dpg.bind_item_theme(filtered, filt_theme)
 
 
+            # Fields format
+            ff = dpg.add_input_text(label='Data fields', tag='fileformat_tag', callback=edit_settings,
+                                    default_value=','.join(self.FIELDFORMAT),
+                                    width=782)
+            dpg.bind_item_theme(ff, text_theme)
+
             with dpg.group(horizontal=True):
                 # dpg.add_spacer(width=5)
+                with dpg.group():
+                    # Date fomat
+                    df = dpg.add_input_text(label='Date format', tag='dateformat_tag', callback=edit_settings,
+                                            default_value=self.DATETIMEFORMAT[0],
+                                            width=120)
+                    dpg.bind_item_theme(df, text_theme)
+
+                    # Time fomat
+                    tf = dpg.add_input_text(label='Time format', tag='timeformat_tag', callback=edit_settings,
+                                            default_value=self.DATETIMEFORMAT[1],
+                                            width=120)
+                    dpg.bind_item_theme(tf, text_theme)
+
+                dpg.add_spacer(width=50)
                 with dpg.group():
                     # Lines to skip spinbox
                     dpg.add_input_int(label='Lines to skip', tag='linestoskip_tag', callback=downsample,
@@ -419,6 +484,8 @@ def main():
     configfile = os.path.join(configfold, 'cfg.json')
     logfile = os.path.join(configfold, 'error.log')
     iconfile = os.path.join(configfold, 'icon_tide.ico')
+    manual = os.path.join(configfold, 'manual.pdf')
+    license = os.path.join(configfold, 'license.pdf')
 
 
     # Remove old log file
@@ -451,7 +518,7 @@ def main():
         SIGMA  = 25
 
 
-    stw = SimpleTideWindow(configfold, configfile, logfile, iconfile,
+    stw = SimpleTideWindow(configfold, configfile, logfile, iconfile, manual, license,
                            LASTFOLDER, LINESTOSKIP, FIELDFORMAT, EXPORTFORMAT,
                            DATETIMEFORMAT, SUBSAMPLE, SIGMA,
                            )

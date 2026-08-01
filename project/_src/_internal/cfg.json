@@ -8,7 +8,7 @@
 "#6:": "                   'Tide_shifted' - shifted DATA;",
 "#7:": "                   'Tide_filtered' - shifted and smoothed DATA;",
 "#8:": "----------------------------------------------------------------------------------------------------------------------------------------------------",
-"LASTFOLDER": "D:/AK/PyProj/UniFilter/TideFilter/project/RTK_TIDE/IC",
+"LASTFOLDER": "D:\\AK\\PyProj\\STF_DPG\\TideFilter\\project\\_src",
 "LINESTOSKIP": 0,
 "FIELDFORMAT": [
 "Date",
@@ -23,6 +23,6 @@
 "%d/%m/%Y",
 "%H:%M:%S"
 ],
-"SUBSAMPLE": 12,
-"SIGMA": 20
+"SUBSAMPLE": 10,
+"SIGMA": 25
 }
