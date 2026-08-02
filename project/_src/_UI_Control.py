@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file '_UI_Control.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.11.1
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -33,10 +33,16 @@ class Ui_MainWindow(object):
         self.actionLoad.setObjectName(u"actionLoad")
         self.actionExport = QAction(MainWindow)
         self.actionExport.setObjectName(u"actionExport")
-        self.actionLoad_config = QAction(MainWindow)
-        self.actionLoad_config.setObjectName(u"actionLoad_config")
+        self.actionEditconfig = QAction(MainWindow)
+        self.actionEditconfig.setObjectName(u"actionEditconfig")
         self.actionShow_config = QAction(MainWindow)
         self.actionShow_config.setObjectName(u"actionShow_config")
+        self.actionEdit_config = QAction(MainWindow)
+        self.actionEdit_config.setObjectName(u"actionEdit_config")
+        self.actionManual = QAction(MainWindow)
+        self.actionManual.setObjectName(u"actionManual")
+        self.actionLicense = QAction(MainWindow)
+        self.actionLicense.setObjectName(u"actionLicense")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout_3 = QVBoxLayout(self.centralwidget)
@@ -60,12 +66,12 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.ch_showraw)
 
-        self.line_2 = QFrame(self.centralwidget)
-        self.line_2.setObjectName(u"line_2")
-        self.line_2.setFrameShape(QFrame.Shape.HLine)
-        self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
+        self.line_1 = QFrame(self.centralwidget)
+        self.line_1.setObjectName(u"line_1")
+        self.line_1.setFrameShape(QFrame.Shape.HLine)
+        self.line_1.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.verticalLayout_2.addWidget(self.line_2)
+        self.verticalLayout_2.addWidget(self.line_1)
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
@@ -127,12 +133,12 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_6)
 
-        self.line = QFrame(self.centralwidget)
-        self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.Shape.HLine)
-        self.line.setFrameShadow(QFrame.Shadow.Sunken)
+        self.line_0 = QFrame(self.centralwidget)
+        self.line_0.setObjectName(u"line_0")
+        self.line_0.setFrameShape(QFrame.Shape.HLine)
+        self.line_0.setFrameShadow(QFrame.Shadow.Sunken)
 
-        self.verticalLayout_2.addWidget(self.line)
+        self.verticalLayout_2.addWidget(self.line_0)
 
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
@@ -204,28 +210,6 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.groupBox)
 
-        self.groupBox_3 = QGroupBox(self.centralwidget)
-        self.groupBox_3.setObjectName(u"groupBox_3")
-        self.groupBox_3.setMinimumSize(QSize(0, 0))
-        self.groupBox_3.setMaximumSize(QSize(16777215, 100))
-        self.verticalLayout_7 = QVBoxLayout(self.groupBox_3)
-        self.verticalLayout_7.setSpacing(0)
-        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
-        self.verticalLayout_7.setContentsMargins(0, 0, 0, 0)
-        self.rb_remove = QRadioButton(self.groupBox_3)
-        self.rb_remove.setObjectName(u"rb_remove")
-
-        self.verticalLayout_7.addWidget(self.rb_remove)
-
-        self.rb_interpolate = QRadioButton(self.groupBox_3)
-        self.rb_interpolate.setObjectName(u"rb_interpolate")
-        self.rb_interpolate.setChecked(True)
-
-        self.verticalLayout_7.addWidget(self.rb_interpolate)
-
-
-        self.verticalLayout_2.addWidget(self.groupBox_3)
-
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalSpacer_2 = QSpacerItem(0, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
@@ -273,6 +257,21 @@ class Ui_MainWindow(object):
 
         self.verticalLayout = QVBoxLayout()
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.b_augment = QPushButton(self.centralwidget)
+        self.b_augment.setObjectName(u"b_augment")
+        self.b_augment.setMinimumSize(QSize(100, 50))
+        self.b_augment.setMaximumSize(QSize(100, 50))
+
+        self.verticalLayout.addWidget(self.b_augment)
+
+        self.b_align = QPushButton(self.centralwidget)
+        self.b_align.setObjectName(u"b_align")
+        self.b_align.setEnabled(False)
+        self.b_align.setMinimumSize(QSize(100, 50))
+        self.b_align.setMaximumSize(QSize(100, 50))
+
+        self.verticalLayout.addWidget(self.b_align)
+
         self.b_reject = QPushButton(self.centralwidget)
         self.b_reject.setObjectName(u"b_reject")
         self.b_reject.setMinimumSize(QSize(100, 50))
@@ -359,7 +358,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.ldata)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.horizontalSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.horizontalSpacer)
 
@@ -384,8 +383,11 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menuFile.addAction(self.actionLoad)
         self.menuFile.addAction(self.actionExport)
-        self.menuFile.addAction(self.actionLoad_config)
+        self.menuFile.addAction(self.actionEdit_config)
         self.menuFile.addAction(self.actionShow_config)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionManual)
+        self.menuFile.addAction(self.actionLicense)
 
         self.retranslateUi(MainWindow)
 
@@ -396,8 +398,11 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"UniFilter", None))
         self.actionLoad.setText(QCoreApplication.translate("MainWindow", u"Load file(s)", None))
         self.actionExport.setText(QCoreApplication.translate("MainWindow", u"Export", None))
-        self.actionLoad_config.setText(QCoreApplication.translate("MainWindow", u"Load config", None))
+        self.actionEditconfig.setText(QCoreApplication.translate("MainWindow", u"Edit config", None))
         self.actionShow_config.setText(QCoreApplication.translate("MainWindow", u"Show config", None))
+        self.actionEdit_config.setText(QCoreApplication.translate("MainWindow", u"Edit config", None))
+        self.actionManual.setText(QCoreApplication.translate("MainWindow", u"Manual", None))
+        self.actionLicense.setText(QCoreApplication.translate("MainWindow", u"License", None))
         self.ch_showraw.setText(QCoreApplication.translate("MainWindow", u"Show raw data", None))
         self.l6.setText(QCoreApplication.translate("MainWindow", u"Lines to skip", None))
         self.l3.setText(QCoreApplication.translate("MainWindow", u"Downsample", None))
@@ -412,14 +417,13 @@ class Ui_MainWindow(object):
         self.rb_FIR.setText(QCoreApplication.translate("MainWindow", u"FIR", None))
         self.rb_Median.setText(QCoreApplication.translate("MainWindow", u"Median", None))
         self.rb_Mean.setText(QCoreApplication.translate("MainWindow", u"Mean", None))
-        self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"Rejection type", None))
-        self.rb_remove.setText(QCoreApplication.translate("MainWindow", u"Remove", None))
-        self.rb_interpolate.setText(QCoreApplication.translate("MainWindow", u"Interpolate", None))
         self.l10.setText(QCoreApplication.translate("MainWindow", u"V Zoom", None))
         self.b_Yup.setText(QCoreApplication.translate("MainWindow", u"up", None))
         self.b_Yall.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.b_Ydown.setText(QCoreApplication.translate("MainWindow", u"down", None))
-        self.b_reject.setText(QCoreApplication.translate("MainWindow", u"Reject", None))
+        self.b_augment.setText(QCoreApplication.translate("MainWindow", u"Augment", None))
+        self.b_align.setText(QCoreApplication.translate("MainWindow", u"Align", None))
+        self.b_reject.setText(QCoreApplication.translate("MainWindow", u"Reject/Accept", None))
         self.b_run.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
         self.b_export.setText(QCoreApplication.translate("MainWindow", u"Export", None))
         self.l_text.setText(QCoreApplication.translate("MainWindow", u"Press DEL to reject", None))

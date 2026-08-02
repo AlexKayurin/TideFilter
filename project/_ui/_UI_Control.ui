@@ -51,7 +51,7 @@
          </widget>
         </item>
         <item>
-         <widget class="Line" name="line_2">
+         <widget class="Line" name="line_1">
           <property name="orientation">
            <enum>Qt::Orientation::Horizontal</enum>
           </property>
@@ -187,7 +187,7 @@
          </layout>
         </item>
         <item>
-         <widget class="Line" name="line">
+         <widget class="Line" name="line_0">
           <property name="orientation">
            <enum>Qt::Orientation::Horizontal</enum>
           </property>
@@ -345,59 +345,6 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_3">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>0</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>16777215</width>
-            <height>100</height>
-           </size>
-          </property>
-          <property name="title">
-           <string>Rejection type</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_7">
-           <property name="spacing">
-            <number>0</number>
-           </property>
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QRadioButton" name="rb_remove">
-             <property name="text">
-              <string>Remove</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QRadioButton" name="rb_interpolate">
-             <property name="text">
-              <string>Interpolate</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
            <spacer name="horizontalSpacer_2">
@@ -516,6 +463,47 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
+             <widget class="QPushButton" name="b_augment">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Augment</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="b_align">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Align</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="b_reject">
               <property name="minimumSize">
                <size>
@@ -530,7 +518,7 @@
                </size>
               </property>
               <property name="text">
-               <string>Reject</string>
+               <string>Reject/Accept</string>
               </property>
               <property name="checkable">
                <bool>true</bool>
@@ -731,9 +719,12 @@
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
         </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Policy::Expanding</enum>
+        </property>
         <property name="sizeHint" stdset="0">
          <size>
-          <width>40</width>
+          <width>0</width>
           <height>20</height>
          </size>
         </property>
@@ -777,8 +768,11 @@
     </property>
     <addaction name="actionLoad"/>
     <addaction name="actionExport"/>
-    <addaction name="actionLoad_config"/>
+    <addaction name="actionEdit_config"/>
     <addaction name="actionShow_config"/>
+    <addaction name="separator"/>
+    <addaction name="actionManual"/>
+    <addaction name="actionLicense"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -792,14 +786,29 @@
     <string>Export</string>
    </property>
   </action>
-  <action name="actionLoad_config">
+  <action name="actionEditconfig">
    <property name="text">
-    <string>Load config</string>
+    <string>Edit config</string>
    </property>
   </action>
   <action name="actionShow_config">
    <property name="text">
     <string>Show config</string>
+   </property>
+  </action>
+  <action name="actionEdit_config">
+   <property name="text">
+    <string>Edit config</string>
+   </property>
+  </action>
+  <action name="actionManual">
+   <property name="text">
+    <string>Manual</string>
+   </property>
+  </action>
+  <action name="actionLicense">
+   <property name="text">
+    <string>License</string>
    </property>
   </action>
  </widget>

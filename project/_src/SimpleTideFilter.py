@@ -1,3 +1,5 @@
+# 02/08/2026 16:26 UTC
+
 import os
 import platform
 import subprocess
@@ -6,6 +8,7 @@ import json
 from datetime import datetime
 import logging
 from statistics import mean
+
 from scipy.ndimage import gaussian_filter1d
 from scipy.signal import kaiserord, lfilter, firwin, medfilt
 import numpy as np
@@ -16,9 +19,61 @@ from PySide6.QtWidgets import QFileDialog, QMessageBox
 from PySide6.QtCore import QCoreApplication, Qt, QEvent
 import pyqtgraph as pg
 import _UI_Control
+import _UI_Config
 
 
 OPTIONS = QFileDialog.Options()
+
+
+class ConfigWindow(QtWidgets.QMainWindow, _UI_Config.Ui_MainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+
+        self.b_ok.clicked.connect(self.ok)
+        self.b_cancel.clicked.connect(self.cancel)
+
+    def ok(self):
+        global FIELDFORMAT
+        global DATETIMEFORMAT
+
+        FIELDFORMAT = self.le_file_format.text().split(',')
+        DATETIMEFORMAT[0] = self.le_date_format.text()
+        DATETIMEFORMAT[1] = self.le_time_format.text()
+
+        try:
+            # save cfg file in ..\_internal\cfg.json
+            CFG = {
+                '#0:': r"Filed names in 'FIELDFORMAT' list MUST BE UNIQUE. Use alternative names (indexes, suffixes, prefixes) if some of them are originally duplicated.",
+                '#1:': r"'Date' and 'Time' fields must be specified in 'FIELDFORMAT' list exactly as it is written (i.e. 'Date' 'Time').",
+                '#2:': r"Date format examples: 30012026 - %d%m%Y; 30/01/2026 - %d/%m/%Y; 30-01-2026 - %d-%m-%Y",
+                '#3:': r"Time format examples: 235959 - %H%M%S; 23:59:59 - %H:%M:%S; 23:59:59.000 - %H:%M:%S.%f",
+                '#4:': r"App adds fields:   'Timestamp_shifted' - shifted DATA timestamp;",
+                '#5:': r"                   'DateTime_shifted' - shifted DATA Date/Time;",
+                '#6:': r"                   'Tide_shifted' - shifted DATA;",
+                '#7:': r"                   'Tide_filtered' - shifted and smoothed DATA;",
+                '#8:': r"----------------------------------------------------------------------------------------------------------------------------------------------------",
+                'LASTFOLDER' : LASTFOLDER,
+                'LINESTOSKIP' : mc.sp_linestoskip.value(),
+                'FIELDFORMAT' : FIELDFORMAT,
+                'EXPORTFORMAT' : EXPORTFORMAT,
+                'DATETIMEFORMAT' : DATETIMEFORMAT,
+                'SUBSAMPLE' : mc.sp_subsample.value(),
+                'SIGMA' : int(mc.le_filt_val.text()),
+                'SHOWMAXIMIZED' : SHOWMAXIMIZED,
+            }
+            json_str = json.dumps(CFG, indent=0)
+            with open(configfile, 'w') as outfile:
+                outfile.write(json_str)
+        except:
+            logging.exception('Config file was not saved:')
+            messagepop('Config file was not saved!')
+
+        self.close()
+
+
+    def cancel(self):
+        self.close()
 
 
 class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
@@ -46,10 +101,12 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
 
         # set signals
         self.dataplot.scene().sigMouseMoved.connect(self.mouse_moved)
-        self.ch_showraw.stateChanged.connect(self.plotraw)
+        self.ch_showraw.stateChanged.connect(self.plotdata)
         self.le_tshift.textChanged.connect(self.shiftdata)
         self.le_zshift.textChanged.connect(self.shiftdata)
-        self.b_reject.clicked.connect(self.reject_pressed)
+        self.b_augment.clicked.connect(self.augment)
+        self.b_align.clicked.connect(self.align_btn_pressed)
+        self.b_reject.clicked.connect(self.reject_btn_pressed)
         self.b_run.clicked.connect(self.runfilters)
         self.b_export.clicked.connect(self.export)
         self.b_Yup.clicked.connect(self.y_change)
@@ -58,8 +115,10 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         self.sp_subsample.valueChanged.connect(self.downsample)
         self.actionLoad.triggered.connect(self.selectfile)
         self.actionExport.triggered.connect(self.export)
-        self.actionLoad_config.triggered.connect(self.selectfile)
+        self.actionEdit_config.triggered.connect(self.editconfig)
         self.actionShow_config.triggered.connect(self.showconfig)
+        self.actionManual.triggered.connect(self.showdoc)
+        self.actionLicense.triggered.connect(self.showdoc)
         for rb in [self.rb_Gauss, self.rb_FIR, self.rb_Median, self.rb_Mean, ]:
             rb.toggled.connect(self.setfilter)
 
@@ -69,11 +128,26 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         self.dataplot.showGrid(x=True, y=True)
 
         # variables
+        self.augmented = False
+        self.alignflag = False
+        self.alignpoint = 0
         self.rejectflag = False
         self.zoom = 1                                   # reject rectangle zoom multiplier
 
 
-    def loadconfig(self, fName):
+    def showdoc(self):
+        # open application manual/license
+        sender = self.sender().objectName()
+
+        to_open = manualfile if sender == 'actionManual' else licensefile
+        platf = platform.system()
+        if platf == 'Linux':
+            subprocess.call(['xdg-open', to_open])  # , check=True)
+        if platf == 'Windows':
+            os.startfile(to_open)
+
+
+    def editconfig(self):
         global LASTFOLDER
         global LINESTOSKIP
         global FIELDFORMAT
@@ -83,48 +157,10 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         global SIGMA
         global SHOWMAXIMIZED
 
-        try:
-            with open(fName) as cfgfile:
-                cfg = json.load(cfgfile)
-            LASTFOLDER = cfg['LASTFOLDER']
-            LINESTOSKIP = cfg['LINESTOSKIP']
-            FIELDFORMAT = cfg['FIELDFORMAT']
-            EXPORTFORMAT = cfg['EXPORTFORMAT']
-            DATETIMEFORMAT = cfg['DATETIMEFORMAT']
-            SUBSAMPLE  = cfg['SUBSAMPLE']
-            SIGMA = cfg['SIGMA']
-            SHOWMAXIMIZED = cfg['SHOWMAXIMIZED']
-
-            self.sp_linestoskip.setValue(LINESTOSKIP)
-            self.sp_subsample.setValue(SUBSAMPLE)
-            self.le_filt_val.setText(str(SIGMA))
-
-            # save cfg file in ..\_internal\cfg.json
-            CFG = {
-                '#0:': r"Filed names in 'FIELDFORMAT' list MUST BE UNIQUE. Use alternative names (indexes, suffixes, prefixes) if some of them are originally duplicated.",
-                '#1:': r"'Date' and 'Time' fields must be specified in 'FIELDFORMAT' list exactly as it is written (i.e. 'Date' 'Time').",
-                '#2:': r"Date format examples: 30012026 - %d%m%Y; 30/01/2026 - %d/%m/%Y; 30-01-2026 - %d-%m-%Y",
-                '#3:': r"Time format examples: 235959 - %H%M%S; 23:59:59 - %H:%M:%S; 23:59:59.000 - %H:%M:%S.%f",
-                '#4:': r"App adds fields:   'Timestamp_shifted' - shifted DATA timestamp;",
-                '#5:': r"                   'DateTime_shifted' - shifted DATA Date/Time;",
-                '#6:': r"                   'Tide_shifted' - shifted DATA;",
-                '#7:': r"                   'Tide_filtered' - shifted and smoothed DATA;",
-                '#8:': r"----------------------------------------------------------------------------------------------------------------------------------------------------",
-                'LASTFOLDER' : LASTFOLDER,
-                'LINESTOSKIP' : self.sp_linestoskip.value(),
-                'FIELDFORMAT' : FIELDFORMAT,
-                'EXPORTFORMAT' : EXPORTFORMAT,
-                'DATETIMEFORMAT' : DATETIMEFORMAT,
-                'SUBSAMPLE' : self.sp_subsample.value(),
-                'SIGMA' : int(self.le_filt_val.text()),
-                'SHOWMAXIMIZED' : SHOWMAXIMIZED,
-            }
-            json_str = json.dumps(CFG, indent=0)
-            with open(configfile, 'w') as outfile:
-                outfile.write(json_str)
-        except:
-            logging.exception('Config file was not loaded and saved:')
-            messagepop('Config file was not loaded and saved!')
+        cw.show()
+        cw.le_file_format.setText(','.join(FIELDFORMAT))
+        cw.le_date_format.setText(DATETIMEFORMAT[0])
+        cw.le_time_format.setText(DATETIMEFORMAT[1])
 
 
     def showconfig(self):
@@ -220,47 +256,74 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         # track mousePressEvent position to compare with mouseReleaseEvent position to reject spike
         self.press_pos = e.position()
 
+        # cursor positions for gaps start/end
+        x, y = self.cursor.x(), self.cursor.y()
+
+        if self.alignflag and self.alignpoint % 2 == 0:
+            self.gap_start = [x, y]
+
+        if self.alignflag and self.alignpoint % 2 == 1:
+            self.gap_end = [x, y]
+
+            # alignment
+            # find nearest data point (timestamp) to gap start/end
+            if self.gap_start[0] > self.gap_end[0]:
+                self.gap_start, self.gap_end = self.gap_end, self.gap_start
+
+            gap_timestamp = []
+            for point in [self.gap_start, self.gap_end]:
+                diff = np.abs(self.tidesub['Timestamp_shifted'] - point[0])
+                near_ix = diff.idxmin()
+                gap_timestamp.append(self.tidesub.loc[near_ix, 'Timestamp_shifted'])
+                self.tidesub.loc[near_ix, 'Tide_shifted'] = point[1]
+
+            condition = ((self.tidesub['Timestamp_shifted'] > gap_timestamp[0]) &
+                         (self.tidesub['Timestamp_shifted'] < gap_timestamp[1]))
+
+            # interpolate tide between gap start/end
+            self.tidesub.loc[condition, 'Tide_shifted'] = np.nan
+            xx = self.tidesub['Tide_shifted'].interpolate()
+            self.tidesub.loc[:, 'Tide_shifted'] = xx
+            # self.tidesub.loc[:, 'Tide_filtered'] = xx
+
+        self.alignpoint += 1
+        self.plotdata()
+
 
     def mouseReleaseEvent(self, e):
         self.release_pos = e.position()
 
-        # REJECT
-        if e.button() == Qt.LeftButton and self.press_pos == self.release_pos:
-            # interpolate/delete from DF where:
-            # left ROI limit < 'Timestamp_shifted' < right ROI limit &
-            # low ROI limit < 'Tide_shifted' < high ROI limit
-            condition = ((self.tidesub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
-                         (self.tidesub['Timestamp_shifted'] < (self.cursor.x() + self.h_span)) &
-                         (self.tidesub['Tide_shifted'] > (self.cursor.y() - self.v_span)) &
-                         (self.tidesub['Tide_shifted'] < (self.cursor.y() + self.v_span))
-                         )
+        if self.rejectflag:
+            # REJECT
+            if e.button() == Qt.LeftButton and self.press_pos == self.release_pos:
+                # interpolate/delete from DF where:
+                # left ROI limit < 'Timestamp_shifted' < right ROI limit &
+                # low ROI limit < 'Tide_shifted' < high ROI limit
+                condition = ((self.tidesub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
+                             (self.tidesub['Timestamp_shifted'] < (self.cursor.x() + self.h_span)) &
+                             (self.tidesub['Tide_shifted'] > (self.cursor.y() - self.v_span)) &
+                             (self.tidesub['Tide_shifted'] < (self.cursor.y() + self.v_span))
+                             )
 
-            if self.rb_interpolate.isChecked():
                 self.tidesub.loc[condition, 'Tide_shifted'] = np.nan
                 x = self.tidesub['Tide_shifted'].interpolate()
                 self.tidesub.loc[:, 'Tide_shifted'] = x
-                self.tidesub.loc[:, 'Tide_filtered'] = x
+                # self.tidesub.loc[:, 'Tide_filtered'] = x
 
-            if self.rb_remove.isChecked():
-                self.tidesub = self.tidesub[~condition]
+            # REACCEPT
+            if e.button() == Qt.RightButton and self.press_pos == self.release_pos:
+                # left ROI limit < 'Timestamp_shifted' < right ROI limit &
+                # low ROI limit < 'Tide_shifted' < high ROI limit
+                condition = ((self.tidesub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
+                             (self.tidesub['Timestamp_shifted'] < (self.cursor.x() + self.h_span)) &
+                             (self.tidesub['Tide'] > (self.cursor.y() - self.v_span)) &
+                             (self.tidesub['Tide'] < (self.cursor.y() + self.v_span))
+                             )
 
-            self.plotraw()
+                self.tidesub.loc[condition, 'Tide_shifted'] = self.tidesub.loc[condition, 'Tide']
+                # self.tidesub.loc[:, 'Tide_filtered'] = self.tidesub.loc[:, 'Tide_shifted']
 
-        # REACCEPT
-        if e.button() == Qt.RightButton and self.press_pos == self.release_pos:
-            # left ROI limit < 'Timestamp_shifted' < right ROI limit &
-            # low ROI limit < 'Tide_shifted' < high ROI limit
-            condition = ((self.tidesub['Timestamp_shifted'] > (self.cursor.x() - self.h_span)) &
-                         (self.tidesub['Timestamp_shifted'] < (self.cursor.x() + self.h_span)) &
-                         (self.tidesub['Tide'] > (self.cursor.y() - self.v_span)) &
-                         (self.tidesub['Tide'] < (self.cursor.y() + self.v_span))
-                         )
-
-            # if self.rb_interpolate.isChecked():
-            self.tidesub.loc[condition, 'Tide_shifted'] = self.tidesub.loc[condition, 'Tide']
-            self.tidesub.loc[:, 'Tide_filtered'] = self.tidesub.loc[:, 'Tide_shifted']
-
-            self.plotraw()
+            self.plotdata()
 
 
     def keyPressEvent(self, e):
@@ -303,12 +366,6 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
             if fNames:
                 self.loadtide(fNames)
 
-        if sender == 'actionLoad_config':
-            fName, _ = QFileDialog.getOpenFileName(self, 'Load configuration file', f'{configfold}',
-                                                   'json file (*.json);;All Files (*.*)', options=OPTIONS)
-            if fName:
-                self.loadconfig(fName)
-
 
     def loadtide(self, fNames):
         global LASTFOLDER
@@ -349,14 +406,66 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
                 #  concat and sort concatenated tide
                 self.tide = pd.concat(tides)
                 self.tide.sort_values(by=['Timestamp'], inplace=True)
+                self.tide.reset_index(drop=True, inplace=True)
 
                 self.plotlegend = self.dataplot.addLegend()
+
+                self.augmented = False
+                self.b_augment.setText('Augment')
+                self.b_augment.setStyleSheet("background-color: none")
+                self.b_augment.setEnabled(True)
+                self.b_align.setEnabled(False)
 
                 self.downsample()
 
             except:
                 logging.exception(f'Could not load tide file(s): {fNames}')
                 messagepop('Check file (header, format, etc.)')
+
+
+    def augment(self):
+        # augment gaps with interpolated values based on median data update rate
+        # timestamp median update rate
+        diff = self.tide['Timestamp'].diff()
+        upd_rate = diff.median()
+        # identify gaps (timestamp diff > update rate)
+        gaps = self.tide[diff > upd_rate]
+        ixs_gap_start = gaps.index - 1
+        ixs_gap_end = gaps.index
+
+        # create empty dfs for gaps and interpolate start<->end values
+        for i in range(len(ixs_gap_start)):
+            timediff = diff[diff > upd_rate].iloc[i]
+            rows_to_add = int(timediff / upd_rate) - 1
+
+            nan_rows = pd.DataFrame([self.tide.loc[ixs_gap_start[i]]] * rows_to_add).copy()
+            nan_rows.iloc[:] = np.nan
+
+            augmented = pd.concat((pd.DataFrame([self.tide.loc[ixs_gap_start[i]]]),
+                                   nan_rows,
+                                   pd.DataFrame([self.tide.loc[ixs_gap_end[i]]]))).reset_index(drop=True)
+
+            for col in ['Tide', 'Tide_shifted', 'Tide_filtered',
+                        'Timestamp', 'Timestamp_shifted',
+                        ]:
+                xx = augmented[col].interpolate(method='index')
+                augmented[col] = xx
+
+            self.tide = (pd.concat([self.tide, augmented], ignore_index=True))
+            self.tide.reset_index(drop=True, inplace=True)
+
+        # sort and reset ix on tide df
+        self.tide.sort_values(by=['Timestamp'], inplace=True)
+        self.tide.reset_index(drop=True, inplace=True)
+
+        self.augmented = True
+        self.b_augment.setText('Augmented')
+        self.b_augment.setStyleSheet("background-color: green")
+        self.b_augment.setEnabled(False)
+
+        self.b_align.setEnabled(True)
+
+        self.downsample()
 
 
     def downsample(self):
@@ -369,7 +478,7 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         self.dataplot.setXRange(self.tidesub['Timestamp_shifted'].min(), self.tidesub['Timestamp_shifted'].max())
         self.dataplot.setYRange(self.tidesub['Tide_shifted'].min(), self.tidesub['Tide_shifted'].max())
         self.dataplot.setAspectLocked(False)
-        self.plotraw()
+        self.plotdata()
 
 
     def shiftdata(self):
@@ -379,45 +488,22 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
         self.downsample()
 
 
-    def plotraw(self):
-        try:
-            self.plotlegend.removeItem(self.tidecurve)
-            self.plotlegend.removeItem(self.tidecurvesub)
-            self.plotlegend.removeItem(self.flt)
-        except:
-            pass
-
-        self.dataplot.clear()
-
-        parent_box = pg.PlotDataItem()
-
-        if self.ch_showraw.isChecked():
-            self.tidecurve = pg.PlotDataItem(x=self.tide['Timestamp_shifted'], y=self.tide['Tide_shifted'],
-                                             pen=pg.mkPen((51, 153, 255, 255), width=0.5))
-            self.tidecurve.setParentItem(parent_box)
-            self.plotlegend.addItem(self.tidecurve, 'Raw')
-
-        self.tidecurvesub = pg.PlotDataItem(x=self.tidesub['Timestamp_shifted'], y=self.tidesub['Tide_shifted'],
-                                            pen=pg.mkPen((205, 205, 0, 255), width=1))
-        self.tidecurvesub.setParentItem(parent_box)
-        self.dataplot.addItem(parent_box)
-        self.plotlegend.addItem(self.tidecurvesub, 'Raw Subsampled')
-
-        # time span in status string
-        start = datetime.fromtimestamp(self.tidesub.iloc[0, 4])
-        end = datetime.fromtimestamp(self.tidesub.iloc[-1, 4])
-        self.l_filename.setText(f'{start} - {end}')
-
-
-    def reject_pressed(self):
+    def reject_btn_pressed(self):
         self.rejectflag = True if not self.rejectflag else False
 
         if self.rejectflag:
-            self.b_reject.setChecked(True)
+            self.b_augment.setEnabled(False)
+            self.b_align.setEnabled(False)
+            self.b_run.setEnabled(False)
+            self.b_export.setEnabled(False)
             self.b_reject.setStyleSheet("background-color: cyan")
             self.l_text.setText('L Mouse Button to reject\nR Mouse Button to re-accept\n1 to decrease eraser\n2 to increase eraser')
         else:
-            self.b_reject.setChecked(False)
+            if not self.augmented:
+                self.b_augment.setEnabled(True)
+            self.b_align.setEnabled(True)
+            self.b_run.setEnabled(True)
+            self.b_export.setEnabled(True)
             self.b_reject.setStyleSheet("background-color: none")
             self.l_text.setText('')
             try:
@@ -426,9 +512,25 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
                 pass
 
 
-    def runfilters(self):
-        self.plotraw()
+    def align_btn_pressed(self):
+        self.alignflag = True if not self.alignflag else False
+        self.alignpoint = 0
 
+        if self.alignflag:
+            self.b_reject.setEnabled(False)
+            self.b_run.setEnabled(False)
+            self.b_export.setEnabled(False)
+            self.b_align.setStyleSheet("background-color: cyan")
+            self.l_text.setText('Click on start/end \nof the area to align')
+        else:
+            self.b_reject.setEnabled(True)
+            self.b_run.setEnabled(True)
+            self.b_export.setEnabled(True)
+            self.b_align.setStyleSheet("background-color: none")
+            self.l_text.setText('')
+
+
+    def runfilters(self):
         try:
             if self.rb_Gauss.isChecked():
                 # Gaussian 1D filter
@@ -472,20 +574,9 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
                 self.filtered = np.convolve(self.tidesub['Tide_shifted'], np.ones(kernel), 'same') / kernel
                 self.tidesub['Tide_filtered'] = self.filtered
 
-
             #  plot
-            self.rejectflag = True
-            self.reject_pressed()
-            self.plotraw()
+            self.plotdata()
 
-            parent_box = pg.PlotDataItem()
-            self.flt = pg.PlotDataItem(x=self.tidesub['Timestamp_shifted'], y=self.tidesub['Tide_filtered'],
-                                             pen=pg.mkPen((255, 0, 255, 255), width=4))
-            self.flt.setParentItem(parent_box)
-            self.dataplot.addItem(parent_box)
-
-            # legend
-            self.plotlegend.addItem(self.flt, 'Filtered')
 
         except:
             logging.exception('Somthing went wrong, check log file')
@@ -507,6 +598,42 @@ class MainWindow(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
             messagepop('File exported')
 
 
+    def plotdata(self):
+        try:
+            self.plotlegend.removeItem(self.tidecurve)
+            self.plotlegend.removeItem(self.tidecurvesub)
+            self.plotlegend.removeItem(self.flt)
+        except:
+            pass
+
+        self.dataplot.clear()
+
+        parent_box = pg.PlotDataItem()
+
+        if self.ch_showraw.isChecked():
+            self.tidecurve = pg.PlotDataItem(x=self.tide['Timestamp_shifted'], y=self.tide['Tide_shifted'],
+                                             pen=pg.mkPen((51, 153, 255, 255), width=0.5))
+            self.tidecurve.setParentItem(parent_box)
+            self.plotlegend.addItem(self.tidecurve, 'Raw')
+
+        self.tidecurvesub = pg.PlotDataItem(x=self.tidesub['Timestamp_shifted'], y=self.tidesub['Tide_shifted'],
+                                            pen=pg.mkPen((205, 205, 0, 255), width=1))
+        self.tidecurvesub.setParentItem(parent_box)
+        self.plotlegend.addItem(self.tidecurvesub, 'Raw Downsampled')
+
+        self.flt = pg.PlotDataItem(x=self.tidesub['Timestamp_shifted'], y=self.tidesub['Tide_filtered'],
+                                   pen=pg.mkPen((255, 0, 255, 255), width=4))
+        self.flt.setParentItem(parent_box)
+        self.plotlegend.addItem(self.flt, 'Filtered')
+
+        self.dataplot.addItem(parent_box)
+
+        # time span in status string
+        start = datetime.fromtimestamp(self.tidesub.iloc[0, 4])
+        end = datetime.fromtimestamp(self.tidesub.iloc[-1, 4])
+        self.l_filename.setText(f'{start} - {end}')
+
+
 def messagepop(message):
     msg = QMessageBox()
     msg.setWindowTitle('Warning')
@@ -519,11 +646,14 @@ def messagepop(message):
 
 def main():
     global mc
+    global cw
     global icon
     global iconhere
     global configfold
     global configfile
     global iconfile
+    global manualfile
+    global licensefile
     global LASTFOLDER
     global LINESTOSKIP
     global FIELDFORMAT
@@ -541,6 +671,8 @@ def main():
     configfile = os.path.join(configfold, 'cfg.json')
     logfile = os.path.join(configfold, 'error.log')
     iconfile = os.path.join(configfold, 'icon_tide.ico')
+    manualfile = os.path.join(configfold, 'manual.pdf')
+    licensefile = os.path.join(configfold, 'license.pdf')
 
     # Remove old log file
     if os.path.isfile(logfile):
@@ -578,14 +710,18 @@ def main():
     app.setStyle('fusion')
 
     mc = MainWindow()
+    cw = ConfigWindow()
 
     # icon
     if os.path.isfile(iconfile):
         iconhere = True
         icon = QtGui.QIcon(iconfile)
         mc.setWindowIcon(icon)
+        cw.setWindowIcon(icon)
 
     mc.setWindowTitle(f'SimpleTideFilter v.2 - akayurin@gmail.com \u00A9 2026')
+    cw.setWindowTitle(f'SimpleTideFilter v.2 - akayurin@gmail.com \u00A9 2026')
+
     if SHOWMAXIMIZED:
         mc.showMaximized()
 
