@@ -16,11 +16,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QFrame, QGroupBox,
-    QHBoxLayout, QLabel, QLineEdit, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QRadioButton,
-    QSizePolicy, QSpacerItem, QSpinBox, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QFrame, QGroupBox, QHBoxLayout,
+    QLabel, QLineEdit, QMainWindow, QMenu,
+    QMenuBar, QPushButton, QRadioButton, QSizePolicy,
+    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
 
 from pyqtgraph import PlotWidget
 
@@ -58,21 +57,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setSpacing(8)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(6, -1, -1, -1)
-        self.ch_showraw = QCheckBox(self.centralwidget)
-        self.ch_showraw.setObjectName(u"ch_showraw")
-        self.ch_showraw.setMinimumSize(QSize(150, 20))
-        self.ch_showraw.setMaximumSize(QSize(150, 20))
-        self.ch_showraw.setChecked(True)
-
-        self.verticalLayout_2.addWidget(self.ch_showraw)
-
-        self.line_1 = QFrame(self.centralwidget)
-        self.line_1.setObjectName(u"line_1")
-        self.line_1.setFrameShape(QFrame.Shape.HLine)
-        self.line_1.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.verticalLayout_2.addWidget(self.line_1)
-
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.l6 = QLabel(self.centralwidget)
@@ -178,37 +162,37 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout_7)
 
-        self.groupBox = QGroupBox(self.centralwidget)
-        self.groupBox.setObjectName(u"groupBox")
-        self.groupBox.setMinimumSize(QSize(0, 0))
-        self.groupBox.setMaximumSize(QSize(16777215, 16777215))
-        self.verticalLayout_4 = QVBoxLayout(self.groupBox)
+        self.group_Filter = QGroupBox(self.centralwidget)
+        self.group_Filter.setObjectName(u"group_Filter")
+        self.group_Filter.setMinimumSize(QSize(0, 0))
+        self.group_Filter.setMaximumSize(QSize(16777215, 16777215))
+        self.verticalLayout_4 = QVBoxLayout(self.group_Filter)
         self.verticalLayout_4.setSpacing(0)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.rb_Gauss = QRadioButton(self.groupBox)
+        self.rb_Gauss = QRadioButton(self.group_Filter)
         self.rb_Gauss.setObjectName(u"rb_Gauss")
         self.rb_Gauss.setChecked(True)
 
         self.verticalLayout_4.addWidget(self.rb_Gauss)
 
-        self.rb_FIR = QRadioButton(self.groupBox)
+        self.rb_FIR = QRadioButton(self.group_Filter)
         self.rb_FIR.setObjectName(u"rb_FIR")
 
         self.verticalLayout_4.addWidget(self.rb_FIR)
 
-        self.rb_Median = QRadioButton(self.groupBox)
+        self.rb_Median = QRadioButton(self.group_Filter)
         self.rb_Median.setObjectName(u"rb_Median")
 
         self.verticalLayout_4.addWidget(self.rb_Median)
 
-        self.rb_Mean = QRadioButton(self.groupBox)
+        self.rb_Mean = QRadioButton(self.group_Filter)
         self.rb_Mean.setObjectName(u"rb_Mean")
 
         self.verticalLayout_4.addWidget(self.rb_Mean)
 
 
-        self.verticalLayout_2.addWidget(self.groupBox)
+        self.verticalLayout_2.addWidget(self.group_Filter)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -403,7 +387,6 @@ class Ui_MainWindow(object):
         self.actionEdit_config.setText(QCoreApplication.translate("MainWindow", u"Edit config", None))
         self.actionManual.setText(QCoreApplication.translate("MainWindow", u"Manual", None))
         self.actionLicense.setText(QCoreApplication.translate("MainWindow", u"License", None))
-        self.ch_showraw.setText(QCoreApplication.translate("MainWindow", u"Show raw data", None))
         self.l6.setText(QCoreApplication.translate("MainWindow", u"Lines to skip", None))
         self.l3.setText(QCoreApplication.translate("MainWindow", u"Downsample", None))
         self.l_filt_parameter.setText(QCoreApplication.translate("MainWindow", u"Sigma", None))
@@ -412,7 +395,7 @@ class Ui_MainWindow(object):
         self.le_zshift.setText(QCoreApplication.translate("MainWindow", u"0", None))
         self.l8.setText(QCoreApplication.translate("MainWindow", u"Apply T shift (s)", None))
         self.le_tshift.setText(QCoreApplication.translate("MainWindow", u"0", None))
-        self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"Filter", None))
+        self.group_Filter.setTitle(QCoreApplication.translate("MainWindow", u"Filter", None))
         self.rb_Gauss.setText(QCoreApplication.translate("MainWindow", u"Gaussian", None))
         self.rb_FIR.setText(QCoreApplication.translate("MainWindow", u"FIR", None))
         self.rb_Median.setText(QCoreApplication.translate("MainWindow", u"Median", None))

@@ -9,7 +9,7 @@
 "#7:": "                   'Tide_filtered' - shifted and smoothed DATA;",
 "#8:": "----------------------------------------------------------------------------------------------------------------------------------------------------",
 "LASTFOLDER": "D:/AK/PyProj/STF/TideFilter/project/RTK_TIDE/Miranda",
-"LINESTOSKIP": 0,
+"LINESTOSKIP": 1,
 "FIELDFORMAT": [
 "Date",
 "Time",
@@ -23,7 +23,7 @@
 "%d/%m/%Y",
 "%H:%M:%S"
 ],
-"SUBSAMPLE": 5,
-"SIGMA": 25,
+"SUBSAMPLE": 1,
+"SIGMA": 200,
 "SHOWMAXIMIZED": 1
 }
