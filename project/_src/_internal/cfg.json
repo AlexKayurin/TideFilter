@@ -24,6 +24,6 @@
 "%H:%M:%S"
 ],
 "SUBSAMPLE": 1,
-"SIGMA": 200,
+"SIGMA": 50,
 "SHOWMAXIMIZED": 1
 }

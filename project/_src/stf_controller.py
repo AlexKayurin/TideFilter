@@ -70,6 +70,8 @@ class Controller:
         # set up view UI
         self._view.setWindowIcon(self._icon)
         self._view.setWindowTitle(f'SimpleTideFilter v.2 - akayurin@gmail.com \u00A9 2026')
+        self._config.setWindowIcon(self._icon)
+        self._config.setWindowTitle(f'SimpleTideFilter v.2 - akayurin@gmail.com \u00A9 2026')
         self._view.l_text.setText('')
         self._view.l_filename.setText('')
         self._view.b_Yup.setText('\u23F6')
