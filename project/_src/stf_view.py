@@ -4,7 +4,6 @@ from PySide6.QtWidgets import QFileDialog
 import pyqtgraph as pg
 import _UI_Control
 
-OPTIONS = QFileDialog.Options()
 
 class View(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
     def __init__(self):
@@ -132,7 +131,7 @@ class View(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
     def selectfile(self):
         fNames, _ = QFileDialog.getOpenFileNames(self, 'Load tide file',
                                                  f'{self._controller._LASTFOLDER}',
-                                               'ASCII tide files (*.*)', options=OPTIONS)
+                                               'ASCII tide files (*.*)')
         if fNames:
             self._controller.handle_loadtide(fNames)
 
@@ -140,7 +139,7 @@ class View(QtWidgets.QMainWindow, _UI_Control.Ui_MainWindow):
     def savetide_btn_pressed(self):
         fName, _ = QFileDialog.getSaveFileName(self, 'Export filtered tide',
                                                f'{self._controller._LASTFOLDER}',
-                                               'csv file (*.csv);;All Files (*.*)', options=OPTIONS)
+                                               'csv file (*.csv);;All Files (*.*)')
         if fName:
             self._controller.handle_savetide(fName)
 

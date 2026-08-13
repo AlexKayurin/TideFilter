@@ -1,4 +1,4 @@
-# SimpleTideFilter on MVC pattern 04/08/2026
+# SimpleTideFilter on MVC pattern 13/08/2026; Refactored for Nuitka build
 
 import os
 import sys
